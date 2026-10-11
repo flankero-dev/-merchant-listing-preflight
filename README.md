@@ -6,10 +6,10 @@ An independent React and TypeScript project for inspecting Merchant Center-style
 
 ## Try the main flows
 
-1. Open the live application and select the CSV checker.
+1. Open the live application; the CSV checker is immediately available.
 2. Load the included demo to inspect grouped issues, priorities and sample product URLs.
 3. Upload your own export. Data is processed in the browser.
-4. Use the structured-data checker with pasted JSON-LD or an HTML fragment.
+4. Switch to JSON-LD / HTML and paste markup, or load the included sample. Switching formats preserves both inputs and results.
 5. Review the findings and investigate the source data manually.
 
 The application does not fetch or crawl the submitted product URLs. A detected field is not proof that the field is accurate, or that Google will approve a listing.
@@ -42,9 +42,12 @@ npm test
 npm run lint
 npm run build
 npm run preview
+# Browser checks against the built application:
+npx playwright install chromium
+npm run test:browser
 ```
 
-The regression suite covers quoted data, line endings, BOM headers, column selection, duplicate headers, empty issue values and malformed input. CI runs tests, lint and the production build.
+The regression suite covers quoted data, line endings, BOM headers, column selection, duplicate headers, empty issue values and malformed input. CI runs tests, lint, the production build and a Chromium browser smoke suite.
 
 ## Privacy and boundaries
 
@@ -56,5 +59,10 @@ Issue priorities are heuristic. The structured-data checker inspects supplied ma
 
 CSV and structured-data analysis are isolated in `src/lib` and covered by regression tests. JSON-LD checks require exact Product/Offer types, a directly nested typed Offer, a non-negative decimal price, a currency recognized by the runtime and a known availability value. These checks do not establish Google eligibility or verify live store data.
 
-The structured-data checker currently inspects the first Product and its directly nested Offer. It does not resolve JSON-LD `@id` references, expand custom contexts, validate AggregateOffer or compare multiple product variants. HTML metadata checks are heuristic. Browser-level interaction tests and keyboard/screen-reader checks remain to be added.
+The structured-data checker currently inspects the first Product and its directly nested Offer. It does not resolve JSON-LD `@id` references, expand custom contexts, validate AggregateOffer or compare multiple product variants. HTML metadata checks are heuristic. Browser checks cover uploads (including malformed and oversized files), markup errors, sample loading, format switching, keyboard button activation, mobile overflow and existing deep links. Full keyboard-navigation and screen-reader audits remain outstanding.
 
+
+
+## Interface structure
+
+The homepage is a tool workspace rather than a service landing page. `CheckerWorkspace` composes separate CSV and markup panels; sample inputs live in `checkerSamples.ts`. Previous reference and service pages retain their URLs. The optional manual-review form is collapsed below the tool and only opens an email draft.
