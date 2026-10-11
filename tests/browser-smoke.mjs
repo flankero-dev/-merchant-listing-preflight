@@ -178,7 +178,8 @@ try {
   await guideLink.click();
   await page.getByRole("heading", { level: 1, name: "How to fix Mismatched product price in Google Merchant Center" }).waitFor();
   await page.waitForFunction(() => window.scrollY === 0);
-  await page.getByRole("link", { name: "Request report", exact: true }).click();
+  // The header CTA is hidden on mobile; use the visible action in the guide hero.
+  await page.locator(".content-hero").getByRole("link", { name: "Request diagnostic report", exact: true }).click();
   await page.locator("#order details[open]").waitFor();
   assert.equal(await page.getByLabel("Store URL", { exact: true }).isVisible(), true);
   await page.reload();
@@ -189,14 +190,19 @@ try {
   await page.goto("http://127.0.0.1:4175/");
   assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
 
+  // The sample-report header action is available at desktop widths.
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("http://127.0.0.1:4175/sample-report");
   await page.getByRole("link", { name: "Run free check", exact: true }).click();
   await page.waitForURL("**/#checker");
-  assert.equal(await page.getByRole("region", { name: "Product data checker" }).isVisible(), true);
+  await page.getByRole("region", { name: "Product data checker" }).waitFor({ state: "visible" });
   assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("http://127.0.0.1:4175/sample-report");
   await page.getByRole("link", { name: "Run free preflight", exact: true }).click();
   await page.waitForURL("**/#checker");
+  await page.getByRole("region", { name: "Product data checker" }).waitFor({ state: "visible" });
+  assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
 
   // Existing deep links remain usable after replacing the homepage.
   for (const path of [
