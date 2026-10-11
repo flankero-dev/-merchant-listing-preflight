@@ -14,7 +14,7 @@ const seoByPath: Record<string, SeoData> = {
   "/": {
     title: "Merchant Listing Preflight — Google Merchant Center Issue Checker",
     description:
-      "Free preflight checker and diagnostic reports for Google Merchant Center issues, product disapprovals, mismatched price, availability, domains and structured data.",
+      "Inspect product CSV exports and Product / Offer JSON-LD locally. Group recorded issues and review basic markup checks without connecting an account.",
   },
   "/merchant-center-issues": {
     title:
@@ -171,3 +171,4 @@ function SEOHead() {
 }
 
 export default SEOHead;
+
