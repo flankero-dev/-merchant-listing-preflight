@@ -35,7 +35,7 @@ function SampleReportPage() {
           <Link to="/guides">Guides</Link>
         </nav>
 
-        <Link className="header-cta" to="/#order">
+        <Link className="header-cta" to="/#checker">
           Run free check
         </Link>
       </header>
@@ -147,7 +147,7 @@ function SampleReportPage() {
             </p>
           </div>
 
-          <Link className="btn primary" to="/#order">
+          <Link className="btn primary" to="/#checker">
             Run free preflight
           </Link>
         </section>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import OrderForm from "./OrderForm";
 import CsvChecker from "./CsvChecker";
 import SchemaChecker from "./SchemaChecker";
@@ -6,6 +7,14 @@ import "./CheckerWorkspace.css";
 
 export default function CheckerWorkspace() {
   const [mode, setMode] = useState<"csv" | "schema">("csv");
+  const contactRef = useRef<HTMLDetailsElement>(null);
+  const { hash } = useLocation();
+  useLayoutEffect(() => {
+    if (hash === "#order" && contactRef.current) {
+      contactRef.current.open = true;
+      contactRef.current.scrollIntoView();
+    }
+  }, [hash]);
   return (
     <div className="preflight-workspace">
       <a className="pw-skip" href="#checker">
@@ -85,7 +94,7 @@ export default function CheckerWorkspace() {
           className="pw-contact"
           aria-label="Optional manual review"
         >
-          <details>
+          <details ref={contactRef}>
             <summary>Contact about a manual review</summary>
             <OrderForm />
           </details>

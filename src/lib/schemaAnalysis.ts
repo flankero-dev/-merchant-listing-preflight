@@ -82,7 +82,7 @@ function safeString(value: unknown): string {
 function extractJsonLdBlocks(input: string): string[] {
   const htmlBlocks = Array.from(
     input.matchAll(
-      /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+      /<script\b[^>]*\stype\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi,
     ),
   ).map((match) => match[1].trim());
 
@@ -134,16 +134,16 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     "PreSale", "Reserved", "SoldOut"].includes(availabilityName);
 
   const canonicalMatch = input.match(
-    /<link[^>]+rel=["'][^"']*canonical[^"']*["'][^>]*>/i,
+    /<link\b[^>]*\srel\s*=\s*["']\s*(?:[^"']*\s)?canonical(?:\s[^"']*)?["'][^>]*>/i,
   );
   const canonicalHref = canonicalMatch?.[0].match(
-    /href=["']([^"']+)["']/i,
+    /\shref\s*=\s*["']([^"']+)["']/i,
   )?.[1];
 
   const hasHreflang =
-    /<link[^>]+rel=["'][^"']*alternate[^"']*["'][^>]*hreflang=["'][^"']+["'][^>]*>/i.test(
+    /<link[^>]+rel\s*=\s*["'][^"']*alternate[^"']*["'][^>]*hreflang\s*=\s*["'][^"']+["'][^>]*>/i.test(
       input,
-    ) || /hreflang=["'][^"']+["']/i.test(input);
+    ) || /hreflang\s*=\s*["'][^"']+["']/i.test(input);
 
   const shippingDetails = offer?.shippingDetails ?? product?.shippingDetails;
   const returnPolicy =

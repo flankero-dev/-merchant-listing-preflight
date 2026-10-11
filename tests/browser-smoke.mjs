@@ -164,6 +164,40 @@ try {
     "true",
   );
 
+  await page.getByRole("button", { name: "JSON-LD / HTML", exact: true }).click();
+  await page.getByRole("textbox", { name: "Product JSON-LD or HTML", exact: true }).fill(
+    '<script type = "application/ld+json">{"@type":"Product","name":"Whitespace test","offers":{"@type":"Offer","price":"10","priceCurrency":"USD"}}</script>'
+  );
+  await page.getByRole("button", { name: "Analyze markup", exact: true }).click();
+  assert.match(await page.getByRole("region", { name: "Markup analysis results" }).innerText(), /Product found: Whitespace test/);
+
+  // Following a guide from a scrolled index must show the new page's heading.
+  await page.goto("http://127.0.0.1:4175/guides");
+  const guideLink = page.locator('a[href="/guides/how-to-fix-mismatched-product-price"]');
+  await guideLink.scrollIntoViewIfNeeded();
+  await guideLink.click();
+  await page.getByRole("heading", { level: 1, name: "How to fix Mismatched product price in Google Merchant Center" }).waitFor();
+  await page.waitForFunction(() => window.scrollY === 0);
+  await page.getByRole("link", { name: "Request report", exact: true }).click();
+  await page.locator("#order details[open]").waitFor();
+  assert.equal(await page.getByLabel("Store URL", { exact: true }).isVisible(), true);
+  await page.reload();
+  await page.locator("#order details[open]").waitFor();
+  await page.getByRole("button", { name: "Open email draft", exact: true }).click();
+  assert.equal(await page.getByLabel("Store URL", { exact: true }).evaluate(el => el.validity.valueMissing), true);
+  assert.match(page.url(), /#order$/);
+  await page.goto("http://127.0.0.1:4175/");
+  assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
+
+  await page.goto("http://127.0.0.1:4175/sample-report");
+  await page.getByRole("link", { name: "Run free check", exact: true }).click();
+  await page.waitForURL("**/#checker");
+  assert.equal(await page.getByRole("region", { name: "Product data checker" }).isVisible(), true);
+  assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
+  await page.goto("http://127.0.0.1:4175/sample-report");
+  await page.getByRole("link", { name: "Run free preflight", exact: true }).click();
+  await page.waitForURL("**/#checker");
+
   // Existing deep links remain usable after replacing the homepage.
   for (const path of [
     "/guides",

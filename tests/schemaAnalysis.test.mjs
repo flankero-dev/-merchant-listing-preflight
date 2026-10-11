@@ -11,6 +11,24 @@ const product = (overrides = {}) => ({
 const analyze = (value) => analyzeSchemaInput(JSON.stringify(value));
 const status = (result, label) => result.checks.find((check) => check.label === label).status;
 
+test("HTML attributes accept whitespace around equals and either attribute order", () => {
+  const result = analyzeSchemaInput(`<link href = 'https://example.com/product' rel = 'canonical'>
+    <link hreflang = 'en' href = 'https://example.com/product' rel = 'alternate'>
+    <script\n type = 'application/ld+json'>${JSON.stringify(product())}</script >`);
+  assert.equal(result.blocks, 1);
+  assert.equal(result.productFound, true);
+  assert.equal(result.offerFound, true);
+  for (const label of ["Price", "Currency", "Availability", "Canonical URL", "Hreflang"])
+    assert.equal(status(result, label), "pass");
+});
+
+test("data-type and noncanonical rel do not masquerade as HTML metadata", () => {
+  const result = analyzeSchemaInput(`<link rel='noncanonical' href='https://example.com'>
+    <script data-type='application/ld+json'>${JSON.stringify(product())}</script>`);
+  assert.equal(result.blocks, 0);
+  assert.equal(status(result, "Canonical URL"), "warn");
+});
+
 test("recognizes typed product offers and valid basic values", () => {
   const result = analyze(product());
   for (const label of ["Product structured data", "Offer object", "Price", "Currency", "Availability"])
