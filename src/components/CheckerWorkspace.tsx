@@ -1,30 +1,21 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import OrderForm from "./OrderForm";
+import DeveloperContact from "./DeveloperContact";
+import { Link } from "react-router-dom";
 import CsvChecker from "./CsvChecker";
 import SchemaChecker from "./SchemaChecker";
 import "./CheckerWorkspace.css";
 
 export default function CheckerWorkspace() {
   const [mode, setMode] = useState<"csv" | "schema">("csv");
-  const contactRef = useRef<HTMLDetailsElement>(null);
-  const { hash, pathname } = useLocation();
-  useLayoutEffect(() => {
-    if (hash === "#order" && contactRef.current) {
-      contactRef.current.open = true;
-      contactRef.current.scrollIntoView();
-    }
-  }, [hash]);
+  const { pathname } = useLocation();
   return (
     <div className="preflight-workspace">
       <main id={pathname === "/" ? "content" : undefined} tabIndex={-1}>
         <div className="pw-intro">
           <p className="pw-kicker">PRODUCT DATA UTILITIES</p>
-          <h1>Find recurring issues in a product export.</h1>
-          <p>
-            Group reported problems from a CSV export, or inspect price,
-            currency and availability in Product / Offer JSON-LD.
-          </p>
+          <h1>Inspect product data.</h1>
+          <p>Group recorded CSV issues or check Product / Offer JSON-LD.</p>
           <span className="pw-local">Processed locally in your browser</span>
         </div>
         <section
@@ -53,37 +44,11 @@ export default function CheckerWorkspace() {
             <SchemaChecker />
           </div>
         </section>
-        <section className="pw-boundaries">
-          <h2>What this tool can tell you</h2>
-          <div>
-            <article>
-              <h3>Recorded issues, grouped</h3>
-              <p>
-                The CSV checker classifies supplied issue text and identifies
-                common columns. It does not independently confirm price, stock
-                or policy violations.
-              </p>
-            </article>
-            <article>
-              <h3>Basic markup checks</h3>
-              <p>
-                The markup checker inspects types and basic values. It cannot
-                confirm what Google sees on a live page or whether a listing
-                will be approved.
-              </p>
-            </article>
-          </div>
-        </section>
-        <section
-          id="order"
-          className="pw-contact"
-          aria-label="Optional developer contact"
-        >
-          <details ref={contactRef}>
-            <summary>Contact the developer</summary>
-            <OrderForm />
-          </details>
-        </section>
+        <p className="pw-help">
+          <Link to="/sample-report">View price example</Link> ·{" "}
+          <Link to="/affected-products-csv-checker">CSV help</Link>
+        </p>
+        <DeveloperContact />
       </main>
     </div>
   );

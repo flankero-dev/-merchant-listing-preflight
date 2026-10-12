@@ -1,13 +1,11 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import CheckerWorkspace from "./components/CheckerWorkspace";
 import GuidePage from "./pages/GuidePage";
 import GuidesIndexPage from "./pages/GuidesIndexPage";
 import SampleReportPage from "./pages/SampleReportPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
-import MerchantCenterIssuesPage from "./pages/MerchantCenterIssuesPage";
 import AffectedProductsCsvCheckerPage from "./pages/AffectedProductsCsvCheckerPage";
-import GoogleMerchantCenterReviewChecklistPage from "./pages/GoogleMerchantCenterReviewChecklistPage";
 import MerchantCenterDiagnosticReportPage from "./pages/MerchantCenterDiagnosticReportPage";
 import SEOHead from "./components/SEOHead";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -34,7 +32,7 @@ function App() {
         <Route path="/" element={null} />
         <Route
           path="/merchant-center-issues"
-          element={<MerchantCenterIssuesPage />}
+          element={<Navigate to="/guides" replace />}
         />
         <Route
           path="/affected-products-csv-checker"
@@ -42,7 +40,7 @@ function App() {
         />
         <Route
           path="/google-merchant-center-review-checklist"
-          element={<GoogleMerchantCenterReviewChecklistPage />}
+          element={<Navigate to="/merchant-center-diagnostic-report" replace />}
         />
         <Route
           path="/merchant-center-diagnostic-report"

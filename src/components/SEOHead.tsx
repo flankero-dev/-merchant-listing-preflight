@@ -16,22 +16,10 @@ const seoByPath: Record<string, SeoData> = {
     description:
       "Inspect product CSV exports and Product / Offer JSON-LD locally. Group recorded issues and review basic markup checks without connecting an account.",
   },
-  "/merchant-center-issues": {
-    title:
-      "Google Merchant Center Issues Checklist — Merchant Listing Preflight",
-    description:
-      "Checklist for common Google Merchant Center issues including mismatched product price, availability, domains, landing pages and Product / Offer structured data.",
-  },
   "/affected-products-csv-checker": {
     title: "Affected Products CSV Checker — Google Merchant Center Preflight",
     description:
       "Input and result guide for the local CSV checker: supported columns, recorded issue groups, warnings and file limits.",
-  },
-  "/google-merchant-center-review-checklist": {
-    title:
-      "Google Merchant Center Review Checklist — Merchant Listing Preflight",
-    description:
-      "A manual checklist for reproducing an issue, verifying a correction and checking the relevant official review requirements.",
   },
   "/merchant-center-diagnostic-report": {
     title: "Product-data Evidence Checklist — Merchant Preflight",
@@ -39,15 +27,14 @@ const seoByPath: Record<string, SeoData> = {
       "Instructions for collecting product-data evidence in your own notes: source values, hypotheses, changes and verification.",
   },
   "/guides": {
-    title: "Merchant Center Issue Guides — Merchant Listing Preflight",
+    title: "Issue guides — Merchant Preflight",
     description:
       "Guides for Google Merchant Center issues including mismatched product price, availability, domains, landing pages and Product / Offer structured data.",
   },
   "/sample-report": {
-    title:
-      "Sample Merchant Center Diagnostic Report — Merchant Listing Preflight",
+    title: "Price mismatch example — Merchant Preflight",
     description:
-      "A fictional worked example of a product price investigation, with evidence notes and a fix checklist. Product data and findings are illustrative.",
+      "Compare sample CSV and JSON-LD prices with an illustrative product-page value, then identify the source that needs correction.",
   },
   "/terms": {
     title: "Usage and Limits — Merchant Preflight",
@@ -57,7 +44,7 @@ const seoByPath: Record<string, SeoData> = {
   "/privacy": {
     title: "Privacy and Data — Merchant Preflight",
     description:
-      "How files, pasted markup and optional email drafts are handled by the current application.",
+      "How checker inputs are processed locally and email contact is handled.",
   },
 };
 

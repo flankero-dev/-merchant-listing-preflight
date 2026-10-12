@@ -10,9 +10,7 @@ export default function SiteHeader() {
         <NavLink to="/" end>
           Checker
         </NavLink>
-        <NavLink to="/merchant-center-issues">Issue reference</NavLink>
         <NavLink to="/guides">Guides</NavLink>
-        <NavLink to="/sample-report">Sample report</NavLink>
       </nav>
     </header>
   );

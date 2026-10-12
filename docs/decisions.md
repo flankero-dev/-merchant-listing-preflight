@@ -40,7 +40,7 @@ This keeps an old asynchronous operation from replacing the user's newer selecti
 
 React Router keeps the existing guide and report URLs available. `SEOHead` is the single owner of document title, description, canonical and social metadata. Pages render content instead of repeating metadata effects.
 
-Route scrolling handles new pages and explicit anchors. The contact section expands for `#order`. Guide references point to Google's documentation; a worked report is explicitly identified as fictional.
+Route scrolling handles new pages and explicit anchors. The legacy `#order` anchor still focuses the compact feedback section. Guide references point to Google's documentation; a worked report is explicitly identified as fictional.
 
 One shared header and footer provide the same navigation on every route, including missing pages. The current section uses `aria-current`, menu links remain visible on small screens, and navigation moves keyboard focus to the new heading or anchor. Reference pages use the checker's colour palette and readable heading sizes.
 
@@ -52,14 +52,10 @@ The single-column grid now uses `minmax(0, 1fr)`, cards can shrink and long word
 
 Evidence: [browser suite](../tests/browser-smoke.mjs).
 
-## Contact is an email draft
+## Keep reference content proportional
 
-The form validates inputs and constructs a URL-encoded `mailto` draft. There is no request-submission backend or success state implying that a message was sent. The user chooses what to send and sends the email in their own email application.
+The main navigation contains Checker and Guides. The separate issue hub duplicated the guide index, so its old URL redirects to Guides. Review preparation duplicated evidence collection, so both URLs now lead to one short checklist. Cloudflare `_redirects` handles direct requests; React Router handles in-app navigation. Redirected aliases are excluded from the sitemap.
 
-The optional contact path is for feedback about the tool. It stays collapsed and does not imply a consulting service or automatic diagnostic report.
+All six issue-specific guides retain their official links and substantive checks. Introductory symptoms, repeated calls to contact the developer and arbitrary related-guide cards were removed. Possible causes are optional reading. The price example is one comparison table with three next steps, rather than eight report sections.
 
-## Product content follows the implementation
-
-Reference pages explain input contracts and manual evidence collection. The former report-service URL remains available as an evidence checklist, without pricing or a report-delivery promise. Privacy describes in-memory analysis and the separate email draft. The draft form has bounded inputs and a persistent, announced clipboard result, including a manual-copy fallback.
-
-A shared reference-page component keeps headings, cards and links consistent. One skip link targets the active main element; the hidden checker never duplicates that target ID. CSV and markup completion messages use stable live regions.
+Contact is an email link and clipboard button. Checker inputs are never attached or sent. The manual-copy fallback is announced persistently. The previous form fields and their unused CSS were removed.

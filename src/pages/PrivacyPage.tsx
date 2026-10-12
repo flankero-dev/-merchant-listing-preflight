@@ -16,8 +16,7 @@ export default function PrivacyPage() {
         {
           title: "Contact is separate from analysis",
           paragraphs: [
-            "The optional form prepares an email draft containing the fields you entered. Selecting Open email draft hands that draft to your email application; this website does not send it.",
-            "Files selected in the checker are not attached to the draft. If you choose to send email, your email provider and the recipient receive the message and any attachments you add.",
+            "The contact link opens your email app. This website does not send mail or attach checker inputs. Your email provider handles any message you choose to send.",
           ],
         },
         {

@@ -12,7 +12,7 @@ export default function ReferencePage({
   sections: Section[];
 }) {
   return (
-    <main className="content-page" id="content" tabIndex={-1}>
+    <main className="content-page compact-page" id="content" tabIndex={-1}>
       <section className="content-hero">
         <div className="breadcrumbs">
           <Link to="/">Checker</Link>
@@ -24,7 +24,7 @@ export default function ReferencePage({
       </section>
       <div className="reference-sections">
         {sections.map((section) => (
-          <section className="article-card" key={section.title}>
+          <section className="reference-section" key={section.title}>
             <h2>{section.title}</h2>
             {section.paragraphs?.map((text) => (
               <p key={text}>{text}</p>
@@ -38,14 +38,6 @@ export default function ReferencePage({
             )}
           </section>
         ))}
-      </div>
-      <div className="hero-actions">
-        <Link className="btn primary" to="/#checker">
-          Open checker
-        </Link>
-        <Link className="btn secondary" to="/sample-report">
-          View worked example
-        </Link>
       </div>
     </main>
   );

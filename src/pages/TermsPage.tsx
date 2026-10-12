@@ -32,7 +32,7 @@ export default function TermsPage() {
         {
           title: "Optional contact",
           paragraphs: [
-            "The contact form opens an email draft. It does not place an order, collect payment or promise a report or response time.",
+            "The contact link opens your email app. A response is not guaranteed.",
           ],
         },
       ]}
