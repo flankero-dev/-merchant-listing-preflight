@@ -9,7 +9,7 @@ function GuidePage() {
     return (
       <div className="page">
 
-        <main className="content-page">
+        <main className="content-page" id="content" tabIndex={-1}>
           <section className="content-hero">
             <p className="eyebrow">404</p>
             <h1>Guide not found</h1>
@@ -31,7 +31,7 @@ function GuidePage() {
   return (
     <div className="page">
 
-      <main className="content-page">
+      <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">
             <Link to="/">Home</Link>
@@ -53,7 +53,7 @@ function GuidePage() {
             </Link>
 
             <Link className="btn secondary" to="/#order">
-              Request diagnostic report
+              Ask about an issue
             </Link>
           </div>
         </section>
@@ -108,7 +108,7 @@ function GuidePage() {
 
         <section className="article-cta">
           <div>
-            <p className="eyebrow">Need a report?</p>
+            <p className="eyebrow">Evidence notes</p>
 
             <h2>Compare the source values.</h2>
 
@@ -119,8 +119,8 @@ function GuidePage() {
             </p>
           </div>
 
-          <Link className="btn primary" to="/#order">
-            Request diagnostic report
+          <Link className="btn primary" to="/merchant-center-diagnostic-report">
+            Open evidence worksheet
           </Link>
         </section>
 

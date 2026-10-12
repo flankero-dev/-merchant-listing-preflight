@@ -38,6 +38,9 @@ export default function CsvChecker() {
 
   return (
     <>
+      <p className="pw-sr-only" role="status">
+        {reading ? "Reading file…" : result ? `${result.rowsCount} product rows analyzed in ${result.issueGroups.length} issue groups.` : ""}
+      </p>
       <div className="pw-input-panel">
         <div>
           <h2>Inspect a product export</h2>
@@ -63,7 +66,7 @@ export default function CsvChecker() {
           </button>
           <span>Comma-separated · 2 MB maximum · 10,000 rows</span>
         </div>
-        {reading && <p role="status">Reading file…</p>}
+        {reading && <p>Reading file…</p>}
         {error && (
           <p className="pw-warning" role="alert">
             {error}
@@ -111,7 +114,7 @@ export default function CsvChecker() {
           </dl>
           <h3>Issue groups</h3>
           {result.issueGroups.length ? (
-            <div className="pw-table-wrap">
+            <div className="pw-table-wrap" role="region" aria-label="Issue groups table" tabIndex={0}>
               <table>
                 <caption className="pw-sr-only">
                   Issues recorded in the supplied export

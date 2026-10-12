@@ -8,7 +8,7 @@ import "./CheckerWorkspace.css";
 export default function CheckerWorkspace() {
   const [mode, setMode] = useState<"csv" | "schema">("csv");
   const contactRef = useRef<HTMLDetailsElement>(null);
-  const { hash } = useLocation();
+  const { hash, pathname } = useLocation();
   useLayoutEffect(() => {
     if (hash === "#order" && contactRef.current) {
       contactRef.current.open = true;
@@ -17,10 +17,7 @@ export default function CheckerWorkspace() {
   }, [hash]);
   return (
     <div className="preflight-workspace">
-      <a className="pw-skip" href="#checker">
-        Skip to checker
-      </a>
-      <main>
+      <main id={pathname === "/" ? "content" : undefined} tabIndex={-1}>
         <div className="pw-intro">
           <p className="pw-kicker">PRODUCT DATA UTILITIES</p>
           <h1>Find recurring issues in a product export.</h1>
@@ -83,7 +80,7 @@ export default function CheckerWorkspace() {
           aria-label="Optional manual review"
         >
           <details ref={contactRef}>
-            <summary>Contact about a manual review</summary>
+            <summary>Ask about a product-data issue</summary>
             <OrderForm />
           </details>
         </section>

@@ -29,6 +29,9 @@ export default function SchemaChecker() {
   }
   return (
     <>
+      <p className="pw-sr-only" role="status">
+        {result ? "Markup analysis complete. Review the individual checks and any errors." : ""}
+      </p>
       <div className="pw-input-panel">
         <div>
           <h2>Inspect Product / Offer markup</h2>
