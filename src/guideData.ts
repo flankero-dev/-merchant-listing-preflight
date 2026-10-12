@@ -17,9 +17,9 @@ export type GuidePageData = {
 export const guidePages: GuidePageData[] = [
     {
         slug: "how-to-fix-mismatched-product-price",
-        title: "How to fix Mismatched product price in Google Merchant Center",
+        title: "Compare product prices",
         metaTitle: "Fix Mismatched Product Price — Google Merchant Center",
-        metaDescription: "Checklist for fixing mismatched product price issues in Google Merchant Center: feed price, landing page price, sale price and Product / Offer structured data.",
+        metaDescription: "Compare the same product and variant across the feed, visible price, sale settings and Offer markup.",
         issueName: "Mismatched product price",
         intro: "This issue usually means Google sees one product price in your feed and a different price on the landing page, structured data, sale price logic or regional version of the page.",
         symptoms: [
@@ -52,9 +52,9 @@ export const guidePages: GuidePageData[] = [
     },
     {
         slug: "how-to-fix-mismatched-product-availability",
-        title: "How to fix Mismatched product availability in Google Merchant Center",
+        title: "Compare product availability",
         metaTitle: "Fix Mismatched Availability — Google Merchant Center",
-        metaDescription: "Checklist for fixing mismatched product availability issues: stock status, feed availability, page content and structured data.",
+        metaDescription: "Trace stock status through the feed, product page and Offer markup, including variants and backorders.",
         issueName: "Mismatched product availability",
         intro: "This issue appears when Google sees different availability signals between your product feed, landing page, stock text and structured data.",
         symptoms: [
@@ -87,9 +87,9 @@ export const guidePages: GuidePageData[] = [
     },
     {
         slug: "how-to-fix-mismatched-domains",
-        title: "How to fix Mismatched domains in Google Merchant Center",
+        title: "Check product URL domains",
         metaTitle: "Fix Mismatched Domains — Google Merchant Center",
-        metaDescription: "Checklist for fixing mismatched domains in Google Merchant Center: product URLs, redirects, canonical URLs and verified website domain.",
+        metaDescription: "Follow product URLs and redirects, then compare their domains with the verified store domain.",
         issueName: "Mismatched domains",
         intro: "This issue usually means the domain in your feed, final product URL, landing page, redirect chain or verified Merchant Center website does not line up correctly.",
         symptoms: [
@@ -122,9 +122,9 @@ export const guidePages: GuidePageData[] = [
     },
     {
         slug: "different-product-landing-page-checklist",
-        title: "Different product landing page checklist",
+        title: "Check product landing pages",
         metaTitle: "Different Product Landing Page — Merchant Center Checklist",
-        metaDescription: "Checklist for diagnosing different product landing page problems in Google Merchant Center.",
+        metaDescription: "Confirm that each feed link opens the intended product and variant rather than another page.",
         issueName: "Different product landing page",
         intro: "This issue can happen when the product URL in the feed does not reliably show the same product to Google and users.",
         symptoms: [
@@ -157,9 +157,9 @@ export const guidePages: GuidePageData[] = [
     },
     {
         slug: "pending-website-check-readiness",
-        title: "Pending website check readiness",
+        title: "Prepare for a website check",
         metaTitle: "Pending Website Check — Merchant Center Readiness",
-        metaDescription: "Website readiness checklist for Merchant Center pending website check issues.",
+        metaDescription: "Check product links, page access and store policies before investigating a pending website check.",
         issueName: "Pending website check",
         intro: "Pending website check means the store should be reviewed for basic trust, crawlability and merchant listing readiness before pushing more products.",
         symptoms: [
@@ -192,9 +192,9 @@ export const guidePages: GuidePageData[] = [
     },
     {
         slug: "product-offer-structured-data-checklist",
-        title: "Product / Offer structured data checklist",
+        title: "Inspect Product and Offer markup",
         metaTitle: "Product Offer Structured Data Checklist",
-        metaDescription: "Checklist for Product and Offer structured data: price, currency, availability, canonical, shipping and return policy readiness.",
+        metaDescription: "Inspect the Product and its Offer, then compare price, currency and stock with the visible product page.",
         issueName: "Product / Offer structured data",
         intro: "Product and Offer structured data helps expose price, currency, availability and merchant details in a machine-readable way.",
         symptoms: [

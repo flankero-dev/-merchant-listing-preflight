@@ -14,7 +14,7 @@ This is an independent project. Included product data and the worked report are 
 2. Clear the results and upload a comma-separated export. Try duplicate headers or an incomplete quoted field: the checker reports the problem instead of displaying a partial analysis.
 3. Switch to **JSON-LD / HTML**, load the sample and choose **Analyze markup**. The Product, Offer, price, currency and availability checks pass.
 4. Change the sample price to `"abc"` and analyze again. The Price check fails. Switch formats: the CSV result and markup input stay available.
-5. Open a guide or the worked report, then return to the checker. Direct route links and the not-found page also work.
+5. Open a guide or the worked report, then choose Checker in the menu. Your current format, inputs and results remain available. Direct route links and the not-found page also work.
 
 Files and markup are processed locally. The checker groups supplied issue text; it does not visit product URLs or compare live prices with a feed.
 

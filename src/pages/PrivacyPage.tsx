@@ -4,25 +4,6 @@ function PrivacyPage() {
 
   return (
     <div className="page">
-      <header className="header">
-        <Link className="logo" to="/">
-          <span className="logo-mark">ML</span>
-          <span>
-            Merchant Listing
-            <strong>Preflight</strong>
-          </span>
-        </Link>
-
-        <nav className="nav">
-          <Link to="/">Home</Link>
-          <Link to="/sample-report">Sample report</Link>
-          <Link to="/guides">Guides</Link>
-        </nav>
-
-        <Link className="header-cta" to="/#order">
-          Request report
-        </Link>
-      </header>
 
       <main className="content-page">
         <section className="content-hero">
@@ -122,16 +103,6 @@ function PrivacyPage() {
           </article>
         </section>
       </main>
-
-      <footer className="footer">
-        <span>Merchant Listing Preflight</span>
-
-        <span className="footer-links">
-          <span>Independent product-data utility.</span>
-          <Link to="/terms">Terms</Link>
-          <Link to="/privacy">Privacy</Link>
-        </span>
-      </footer>
     </div>
   );
 }

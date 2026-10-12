@@ -53,6 +53,24 @@ try {
   await csv.waitFor();
   assert.equal(await csv.locator("tbody tr").count(), 4);
   assert.match(await csv.innerText(), /sample-products.csv/);
+  // Reference navigation must preserve the loaded analysis without a reload.
+  let documentRequests = 0;
+  page.on("request", request => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documentRequests++;
+  });
+  const nav = page.getByRole("navigation", { name: "Main navigation" });
+  await nav.getByRole("link", { name: "Guides", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await page.waitForURL("**/guides");
+  await nav.locator('a[href="/guides"][aria-current="page"]').waitFor();
+  assert.equal(await nav.getByRole("link", { name: "Guides", exact: true }).getAttribute("aria-current"), "page");
+  await page.waitForFunction(() => document.activeElement?.matches("main h1"));
+  assert.equal(await page.getByRole("heading", { level: 1 }).evaluate(el => el === document.activeElement), true, await page.evaluate(() => ({url: location.pathname, focus: document.activeElement?.outerHTML.slice(0,200)})));
+  assert.equal(await page.getByRole("region", { name: "CSV analysis results" }).count(), 0);
+  await nav.getByRole("link", { name: "Checker", exact: true }).click();
+  await page.waitForURL("http://127.0.0.1:4175/");
+  assert.match(await csv.innerText(), /sample-products.csv/);
+  assert.equal(documentRequests, 0, "internal navigation must not reload the document");
   await mkdir("docs", { recursive: true });
   await page.screenshot({ path: "docs/checker-desktop.png", fullPage: true });
 
@@ -72,6 +90,12 @@ try {
   const markup = page.getByRole("region", { name: "Markup analysis results" });
   await markup.waitFor();
   assert.equal(await markup.locator(".pw-status.pass").count(), 5);
+  await nav.getByRole("link", { name: "Guides", exact: true }).click();
+  await page.waitForURL("**/guides");
+  await nav.getByRole("link", { name: "Checker", exact: true }).click();
+  await markup.waitFor({ state: "visible" });
+  assert.equal(await markup.locator(".pw-status.pass").count(), 5);
+  assert.equal(await page.getByRole("button", { name: "JSON-LD / HTML", exact: true }).getAttribute("aria-pressed"), "true");
   await page.getByLabel("Product JSON-LD or HTML").fill("{broken");
   assert.equal(await markup.count(), 0);
   await page
@@ -176,7 +200,7 @@ try {
   const guideLink = page.locator('a[href="/guides/how-to-fix-mismatched-product-price"]');
   await guideLink.scrollIntoViewIfNeeded();
   await guideLink.click();
-  await page.getByRole("heading", { level: 1, name: "How to fix Mismatched product price in Google Merchant Center" }).waitFor();
+  await page.getByRole("heading", { level: 1, name: "Compare product prices" }).waitFor();
   await page.waitForFunction(() => window.scrollY === 0);
   // The header CTA is hidden on mobile; use the visible action in the guide hero.
   await page.locator(".content-hero").getByRole("link", { name: "Request diagnostic report", exact: true }).click();
@@ -190,11 +214,11 @@ try {
   await page.goto("http://127.0.0.1:4175/");
   assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
 
-  // The sample-report header action is available at desktop widths.
+  // The shared menu returns from the sample report to the checker.
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("http://127.0.0.1:4175/sample-report");
-  await page.getByRole("link", { name: "Run free check", exact: true }).click();
-  await page.waitForURL("**/#checker");
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Checker", exact: true }).click();
+  await page.waitForURL(/\/(?:#checker)?$/);
   await page.getByRole("region", { name: "Product data checker" }).waitFor({ state: "visible" });
   assert.equal(await page.locator("#order details").evaluate(el => el.open), false);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -216,15 +240,15 @@ try {
     "/google-merchant-center-review-checklist",
   ]) {
     await page.goto(`http://127.0.0.1:4175${path}`);
-    assert.equal(await page.locator("h1").count(), 1, path);
+    assert.equal(await page.locator("h1:visible").count(), 1, path);
     assert.doesNotMatch(
-      await page.locator("h1").innerText(),
+      await page.locator("h1:visible").innerText(),
       /not found/i,
       path,
     );
   }
   await page.goto("http://127.0.0.1:4175/missing-page");
-  assert.match(await page.locator("h1").innerText(), /not found|404/i);
+  assert.match(await page.locator("h1:visible").innerText(), /not found|404/i);
   await page.goto("http://127.0.0.1:4175/");
   await page.getByLabel("Affected-products CSV", { exact: true }).setInputFiles({
     name: "repeated-urls.csv", mimeType: "text/csv", buffer: Buffer.from(
@@ -272,8 +296,15 @@ try {
     await page.setViewportSize({ width, height: 844 });
     for (const path of reviewPaths) {
       await page.goto(`http://127.0.0.1:4175${path}`);
-      await page.locator("h1").waitFor();
-      assert.equal(await page.locator("h1").count(), 1);
+      await page.locator("h1:visible").waitFor();
+      assert.equal(await page.locator("h1:visible").count(), 1);
+      assert.equal(await page.getByRole("banner").count(), 1);
+      assert.equal(await page.getByRole("contentinfo").count(), 1);
+      const menu = page.getByRole("navigation", { name: "Main navigation" });
+      for (const name of ["Checker", "Issue reference", "Guides", "Sample report"]) {
+        assert.equal(await menu.getByRole("link", { name, exact: true }).isVisible(), true, `${path} at ${width}: ${name}`);
+      }
+      assert.equal(await page.getByRole("link", { name: /Source code/ }).count(), 0);
       assert.equal(await page.locator("main *").evaluateAll(elements => elements.every(element => {
         if (!element.getClientRects().length || element.closest(".pw-sr-only,.pw-skip")) return true;
         const rect = element.getBoundingClientRect();
@@ -281,9 +312,39 @@ try {
       })), true, `${path} at ${width}: visible content stays within viewport`);
     }
   }
+  // Exercise every main-menu destination with real clicks at mobile and desktop.
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [name, path] of [["Guides", "/guides"], ["Sample report", "/sample-report"], ["Issue reference", "/merchant-center-issues"], ["Checker", "/"]]) {
+      await nav.getByRole("link", { name, exact: true }).click();
+      await page.waitForURL(`http://127.0.0.1:4175${path}`);
+      await nav.locator(`a[href="${path}"][aria-current="page"]`).waitFor();
+      assert.equal(await nav.getByRole("link", { name, exact: true }).getAttribute("aria-current"), "page");
+      await page.waitForFunction(() => document.activeElement?.matches("main h1"));
+      assert.equal(await page.getByRole("heading", { level: 1 }).evaluate(el => el === document.activeElement), true, await page.evaluate(() => ({url: location.pathname, focus: document.activeElement?.outerHTML.slice(0,200)})));
+    }
+  }
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await nav.getByRole("link", { name: "Guides", exact: true }).click();
+    await page.getByRole("heading", { level: 1, name: "Google Merchant Center issue guides" }).waitFor();
+    await page.screenshot({ path: `docs/guides-${width}.png`, fullPage: true });
+    for (const path of reviewPaths.filter(path => path.startsWith("/guides/"))) {
+      await page.locator(`.guides-index-grid a[href="${path}"]`).click();
+      await page.waitForURL(`http://127.0.0.1:4175${path}`);
+      await page.getByRole("heading", { name: "Official reference", exact: true }).waitFor();
+      await nav.getByRole("link", { name: "Guides", exact: true }).click();
+      await page.getByRole("heading", { level: 1, name: "Google Merchant Center issue guides" }).waitFor();
+    }
+    for (const name of ["Privacy", "Terms"]) {
+      await page.getByRole("contentinfo").getByRole("link", { name, exact: true }).click();
+      await page.waitForURL(`**/${name.toLowerCase()}`);
+      await page.getByRole("heading", { level: 1 }).waitFor();
+    }
+  }
   assert.deepEqual(errors, []);
   console.log(
-    "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404; no runtime errors.",
+    "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404, shared menus, all six guide links, footer links, route focus and retained analysis; no runtime errors.",
   );
 } finally {
   await browser?.close();
