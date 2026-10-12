@@ -83,3 +83,9 @@ test("retains prototype-named CSV columns as ordinary values", () => {
 test("bounds input size before parsing", () => {
   assert.match(analyzeCsvText("x".repeat(2_000_001)).warnings[0], /limited/);
 });
+
+test("URL samples are distinct and include later unique products", () => {
+  const result = analyzeCsvText("Issue,Link\nWarning,https://example.com/a\nWarning,https://example.com/a\nWarning,https://example.com/b");
+  assert.equal(result.rowsCount, 3);
+  assert.deepEqual(result.topUrls, ["https://example.com/a", "https://example.com/b"]);
+});

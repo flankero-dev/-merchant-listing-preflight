@@ -123,10 +123,11 @@ Thanks.`);
             id="store-url"
             required
             type="url"
+            pattern="https?://.+"
             value={storeUrl}
             onChange={(event) => setStoreUrl(event.target.value)}
             placeholder="https://example.com"
-            title="Store URL"
+            title="Enter a store URL starting with https:// or http://"
           />
 
           <label className="field-label" htmlFor="client-email">
@@ -186,6 +187,7 @@ Thanks.`);
             onChange={(event) => setCurrency(event.target.value.toUpperCase())}
             placeholder="USD"
             maxLength={3}
+            pattern="[A-Z]{3}"
             title="Target currency"
           />
 

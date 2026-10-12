@@ -79,28 +79,32 @@ function safeString(value: unknown): string {
   return "";
 }
 
+// Read complete attribute tokens so data-type and text inside other values
+// cannot be mistaken for the actual type/rel/href attributes.
+function readAttributes(source: string): Map<string, string> {
+  const attributes = new Map<string, string>();
+  for (const match of source.matchAll(/([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) {
+    const name = match[1].toLowerCase();
+    if (!attributes.has(name)) attributes.set(name, match[2] ?? match[3] ?? match[4] ?? "");
+  }
+  return attributes;
+}
+
 function extractJsonLdBlocks(input: string): string[] {
   const htmlBlocks = Array.from(
-    input.matchAll(
-      /<script\b[^>]*\stype\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi,
-    ),
-  ).map((match) => match[1].trim());
-
-  if (htmlBlocks.length > 0) {
-    return htmlBlocks;
-  }
-
+    input.matchAll(/<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]*?)<\/script\s*>/gi),
+  ).filter(match => readAttributes(match[1]).get("type")?.toLowerCase() === "application/ld+json")
+    .map(match => match[2].trim());
+  if (htmlBlocks.length > 0) return htmlBlocks;
   const trimmed = input.trim();
-
-  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-    return [trimmed];
-  }
-
-  return [];
+  return trimmed.startsWith("{") || trimmed.startsWith("[") ? [trimmed] : [];
 }
 
 export function analyzeSchemaInput(input: string): SchemaAnalysis {
-  const blocks = extractJsonLdBlocks(input);
+  const trimmed = input.trim();
+  const isJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+  const html = isJson ? "" : input.replace(/<!--[\s\S]*?-->|<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>[\s\S]*?<\/script\s*>/gi, match => match.startsWith("<!--") ? "" : match);
+  const blocks = isJson ? [trimmed] : extractJsonLdBlocks(html);
   const errors: string[] = [];
   const parsed: unknown[] = [];
 
@@ -133,17 +137,14 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     "LimitedAvailability", "MadeToOrder", "OnlineOnly", "OutOfStock", "PreOrder",
     "PreSale", "Reserved", "SoldOut"].includes(availabilityName);
 
-  const canonicalMatch = input.match(
-    /<link\b[^>]*\srel\s*=\s*["']\s*(?:[^"']*\s)?canonical(?:\s[^"']*)?["'][^>]*>/i,
-  );
-  const canonicalHref = canonicalMatch?.[0].match(
-    /\shref\s*=\s*["']([^"']+)["']/i,
-  )?.[1];
-
-  const hasHreflang =
-    /<link[^>]+rel\s*=\s*["'][^"']*alternate[^"']*["'][^>]*hreflang\s*=\s*["'][^"']+["'][^>]*>/i.test(
-      input,
-    ) || /hreflang\s*=\s*["'][^"']+["']/i.test(input);
+  const metadataHtml = html.replace(/<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>[\s\S]*?<\/script\s*>/gi, "");
+  const links = Array.from(metadataHtml.matchAll(/<link\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi))
+    .map(match => readAttributes(match[1]));
+  const hasRel = (attributes: Map<string, string>, rel: string) =>
+    (attributes.get("rel") ?? "").toLowerCase().split(/\s+/).includes(rel);
+  const canonicalHref = links.find(attributes => hasRel(attributes, "canonical"))?.get("href")?.trim();
+  const hasHreflang = links.some(attributes => hasRel(attributes, "alternate") &&
+    Boolean(attributes.get("hreflang")?.trim()) && Boolean(attributes.get("href")?.trim()));
 
   const shippingDetails = offer?.shippingDetails ?? product?.shippingDetails;
   const returnPolicy =

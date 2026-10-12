@@ -923,12 +923,17 @@ textarea:focus {
   display: grid;
   gap: 18px;
 }
+.sample-report-full {
+  grid-template-columns: minmax(0, 1fr);
+}
 
 .content-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .article-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 26px;

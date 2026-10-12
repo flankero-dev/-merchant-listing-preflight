@@ -237,7 +237,10 @@
   padding: 6px 10px;
   font-size: 12px;
   border-radius: 4px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
+.pw-columns dd { min-width: 0; }
 .pw-columns dt {
   color: #aebfc3;
 }
@@ -337,7 +340,10 @@
   margin: 0;
   font-size: 14px;
   color: #aebfc3;
+  overflow-wrap: anywhere;
 }
+.pw-checks li > div { min-width: 0; }
+.pw-checks .pw-status { flex-shrink: 0; }
 .pw-boundaries {
   padding: 32px 0;
 }

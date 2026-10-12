@@ -225,6 +225,33 @@ try {
   }
   await page.goto("http://127.0.0.1:4175/missing-page");
   assert.match(await page.locator("h1").innerText(), /not found|404/i);
+  await page.goto("http://127.0.0.1:4175/");
+  await page.getByLabel("Affected-products CSV", { exact: true }).setInputFiles({
+    name: "repeated-urls.csv", mimeType: "text/csv", buffer: Buffer.from(
+      "Issue,Link\nPending,https://example.com/a\nPending,https://example.com/a\nPending,https://example.com/b") });
+  await page.getByRole("heading", { name: "repeated-urls.csv", exact: true }).waitFor();
+  assert.equal(await page.locator(".pw-urls li").count(), 2);
+  await page.getByRole("button", { name: "JSON-LD / HTML", exact: true }).click();
+  await page.getByLabel("Product JSON-LD or HTML").fill(
+    '<script TYPE=application/ld+json>{"@type":"Product","name":"' + "P".repeat(200) + '"}</script>');
+  await page.getByRole("button", { name: "Analyze markup", exact: true }).click();
+  assert.match(await page.getByRole("region", { name: "Markup analysis results" }).innerText(), /Product found:/);
+  await page.setViewportSize({ width: 320, height: 700 });
+  assert.equal(await page.locator(".pw-checks").evaluate(el => el.scrollWidth <= el.clientWidth + 1), true);
+  await page.goto("http://127.0.0.1:4175/#order");
+  await page.getByLabel("Store URL", { exact: true }).fill("ftp://example.com");
+  assert.equal(await page.getByLabel("Store URL", { exact: true }).evaluate(el => el.validity.valid), false);
+  await page.getByLabel("Store URL", { exact: true }).fill("https://example.com");
+  assert.equal(await page.getByLabel("Store URL", { exact: true }).evaluate(el => el.validity.valid), true);
+  await page.getByLabel("Target currency", { exact: true }).fill("123");
+  assert.equal(await page.getByLabel("Target currency", { exact: true }).evaluate(el => el.validity.valid), false);
+  for (const path of ["/privacy", "/terms", "/sample-report"]) {
+    await page.goto(`http://127.0.0.1:4175${path}`);
+    assert.equal(await page.locator(".article-card").evaluateAll(cards => cards.every(card => {
+      const rect = card.getBoundingClientRect();
+      return rect.left >= 0 && rect.right <= innerWidth && card.scrollWidth <= card.clientWidth + 1;
+    })), true, `${path}: card contents must fit the mobile viewport`);
+  }
   assert.deepEqual(errors, []);
   console.log(
     "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404; no runtime errors.",
