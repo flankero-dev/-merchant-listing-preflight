@@ -383,7 +383,7 @@ try {
     .getByLabel("Product JSON-LD or HTML")
     .fill(
       '<script TYPE=application/ld+json>{"@type":"Product","name":"' +
-  "P".repeat(200) +
+        "P".repeat(200) +
         '"}</script>',
     );
   await page

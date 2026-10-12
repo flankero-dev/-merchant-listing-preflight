@@ -66,7 +66,7 @@ export default function CheckerWorkspace() {
             </article>
             <article>
               <h3>Basic markup checks</h3>
-           <p>
+              <p>
                 The markup checker inspects types and basic values. It cannot
                 confirm what Google sees on a live page or whether a listing
                 will be approved.
