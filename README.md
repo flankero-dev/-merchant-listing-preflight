@@ -29,7 +29,7 @@ Files and markup are processed locally. The checker groups supplied issue text; 
 | Keep each input when changing format          | [Workspace](src/components/CheckerWorkspace.tsx)                                                  | [Format persistence and file re-selection](tests/browser-smoke.mjs)                          |
 | Handle real navigation and small screens      | [Route scrolling](src/components/RouteScroll.tsx), [central metadata](src/components/SEOHead.tsx) | Deep links, anchors, mobile cards and long results in browser smoke                          |
 
-Guides provide short investigation checklists with links to Google's documentation. The worked report distinguishes illustrative evidence from output produced by the checker.
+Guides provide short investigation checklists with links to Google's documentation. The worked report reuses the sample CSV and markup, adds clearly fictional page observations and distinguishes facts from hypotheses. The evidence-checklist route explains manual notes; it is not an editable worksheet.
 
 ## Run locally
 
@@ -53,13 +53,14 @@ Run the browser suite as a separate command; it starts and stops its own preview
 
 ```sh
 npm test
+npm run format:check
 npm run lint
 npm run build
 npx playwright install chromium
 npm run test:browser
 ```
 
-Node tests cover the analyzers. Playwright checks sample data, uploads and errors, re-selection, format switching, route navigation, mobile layouts and the contact form. CI runs all checks and stores browser screenshots as artifacts.
+Node tests cover the analyzers. Playwright checks sample data, uploads and errors, re-selection, format switching, route navigation, mobile layouts and the optional email draft. CI runs all checks and stores browser screenshots as artifacts.
 
 ## Boundaries
 
@@ -67,7 +68,7 @@ Node tests cover the analyzers. Playwright checks sample data, uploads and error
 - JSON-LD: up to 2 million input characters; checks inspect the first Product and a directly nested, typed Offer. Referenced offers, AggregateOffer, custom contexts and variant comparison are not resolved.
 - Canonical checks require an absolute HTTP(S) URL for a pass; relative references need a page URL. Destinations are not fetched. Hreflang, shipping and returns remain warnings because their complete requirements are not validated.
 - Raw CSV field spaces are retained; headers, issue grouping and URL samples are normalized separately.
-- Priority is a heuristic based on issue text. Passing markup checks does not establish Google eligibility or confirm live stock or prices.
+- Suggested priority is a heuristic based on issue text; unrecognised issues are Unrated. Passing markup checks does not establish Google eligibility or confirm live stock or prices.
 - The published site includes hosting-provided Cloudflare Web Analytics; the Privacy page distinguishes this from local checker input processing.
-- The optional contact form opens a draft in the user's email app. It does not send mail or submit data to a backend.
+- The collapsed developer-contact form opens a draft in the user's email app. Only the message is required; product context is optional. It does not send mail, submit data to a backend or promise advice.
 - Chromium browser workflows are covered. A full assistive-technology and cross-browser audit remains outside the tested scope.

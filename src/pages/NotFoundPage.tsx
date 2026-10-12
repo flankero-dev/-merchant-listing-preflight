@@ -10,13 +10,13 @@ function NotFoundPage() {
           <h1>Page not found</h1>
 
           <p>
-            This page does not exist. Use the free preflight checker, open the
+            This page does not exist. Open the product-data checker, open the
             Merchant Center issue hub or browse the issue guides.
           </p>
 
           <div className="hero-actions">
             <Link className="btn primary" to="/#checker">
-              Run free preflight
+              Open checker
             </Link>
 
             <Link className="btn secondary" to="/guides">
@@ -43,12 +43,9 @@ function NotFoundPage() {
               className="issue-hub-card"
               to="/affected-products-csv-checker"
             >
-              <span>CSV checker</span>
-              <h2>Affected-products CSV checker</h2>
-              <p>
-                Use your Merchant Center CSV to group affected products and
-                detect issue patterns.
-              </p>
+              <span>CSV reference</span>
+              <h2>CSV input and result guide</h2>
+              <p>Read the CSV format, result meanings and supported limits.</p>
               <strong>Open page →</strong>
             </Link>
 
@@ -56,11 +53,11 @@ function NotFoundPage() {
               className="issue-hub-card"
               to="/merchant-center-diagnostic-report"
             >
-              <span>Evidence worksheet</span>
-              <h2>Evidence worksheet</h2>
+              <span>Evidence checklist</span>
+              <h2>Evidence checklist</h2>
               <p>
-                Record source values, hypotheses and the steps used to verify a
-                change.
+                Read how to collect source values, distinguish hypotheses and
+                verify a change.
               </p>
               <strong>Open page →</strong>
             </Link>

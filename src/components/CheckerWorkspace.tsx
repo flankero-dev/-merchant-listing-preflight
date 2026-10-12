@@ -66,7 +66,7 @@ export default function CheckerWorkspace() {
             </article>
             <article>
               <h3>Basic markup checks</h3>
-              <p>
+           <p>
                 The markup checker inspects types and basic values. It cannot
                 confirm what Google sees on a live page or whether a listing
                 will be approved.
@@ -77,10 +77,10 @@ export default function CheckerWorkspace() {
         <section
           id="order"
           className="pw-contact"
-          aria-label="Optional manual review"
+          aria-label="Optional developer contact"
         >
           <details ref={contactRef}>
-            <summary>Ask about a product-data issue</summary>
+            <summary>Contact the developer</summary>
             <OrderForm />
           </details>
         </section>

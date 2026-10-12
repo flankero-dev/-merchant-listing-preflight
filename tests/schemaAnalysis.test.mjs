@@ -40,8 +40,8 @@ test("data-type and noncanonical rel do not masquerade as HTML metadata", () => 
 test("recognizes typed product offers and valid basic values", () => {
   const result = analyze(product());
   for (const label of [
-    "Product structured data",
-    "Offer object",
+    "Product type",
+    "Nested Offer type",
     "Price",
     "Currency",
     "Availability",
@@ -203,5 +203,49 @@ test("optional policy presence cannot imply validated shipping or returns", () =
     );
     assert.equal(status(result, "Shipping details"), "warn");
     assert.equal(status(result, "Return policy"), "warn");
+  }
+});
+
+test("attribute strings and inert HTML containers do not create active JSON-LD or metadata", () => {
+  const markup = `<script type="application/ld+json">${JSON.stringify(product())}</script><link rel=canonical href=https://example.com>`;
+  for (const input of [
+    `<div title='${markup}'></div>`,
+    ...["textarea", "template", "style", "title", "noscript"].map(
+      (tag) => `<${tag}>${markup}</${tag}>`,
+    ),
+  ]) {
+    const result = analyzeSchemaInput(input);
+    assert.equal(result.blocks, 0);
+    assert.equal(result.productFound, false);
+    assert.equal(status(result, "Canonical URL"), "warn");
+  }
+});
+test("real data after an inert block remains discoverable", () => {
+  const raw = JSON.stringify(product());
+  const result = analyzeSchemaInput(
+    `<template><textarea><script type=application/ld+json>${raw}</script></textarea></template><script type=application/ld+json>${raw}</script><link rel=canonical href=https://example.com>`,
+  );
+  assert.equal(result.blocks, 1);
+  assert.equal(result.productFound, true);
+  assert.equal(status(result, "Canonical URL"), "pass");
+});
+test("ordinary script strings cannot contribute metadata and unclosed data scripts are inspected", () => {
+  const raw = JSON.stringify(product());
+  const result = analyzeSchemaInput(
+    `<script>const example='<link rel=canonical href=https://example.com>';</script><script type=application/ld+json>${raw}`,
+  );
+  assert.equal(result.blocks, 1);
+  assert.equal(result.productFound, true);
+  assert.equal(status(result, "Canonical URL"), "warn");
+});
+
+test("unfinished comments and attributes cannot create phantom markup", () => {
+  const markup = `<script type=application/ld+json>${JSON.stringify(product())}</script>`;
+  for (const input of [
+    `<!--${markup}`,
+    `<div title='${markup}`,
+    "<!--".repeat(100000) + markup,
+  ]) {
+    assert.equal(analyzeSchemaInput(input).productFound, false);
   }
 });

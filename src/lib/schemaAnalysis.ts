@@ -98,21 +98,76 @@ function readAttributes(source: string): Map<string, string> {
   return attributes;
 }
 
-function extractJsonLdBlocks(input: string): string[] {
-  const htmlBlocks = Array.from(
-    input.matchAll(
-      /<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]*?)<\/script\s*>/gi,
-    ),
-  )
-    .filter(
-      (match) =>
-        readAttributes(match[1]).get("type")?.toLowerCase() ===
-        "application/ld+json",
-    )
-    .map((match) => match[2].trim());
-  if (htmlBlocks.length > 0) return htmlBlocks;
-  const trimmed = input.trim();
-  return trimmed.startsWith("{") || trimmed.startsWith("[") ? [trimmed] : [];
+// Consume whole tags, including quoted attributes, before looking for scripts.
+// Raw-text and inert containers must not turn HTML-looking strings into data.
+function inspectHtml(input: string): {
+  blocks: string[];
+  links: Map<string, string>[];
+} {
+  const blocks: string[] = [];
+  const links: Map<string, string>[] = [];
+  const tags = /<\/?([a-z][a-z\d:-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi;
+  let templateDepth = 0;
+  let cursor = 0;
+  while (cursor < input.length) {
+    const start = input.indexOf("<", cursor);
+    if (start === -1) break;
+    if (input.startsWith("<!--", start)) {
+      const end = input.indexOf("-->", start + 4);
+      if (end === -1) break;
+      cursor = end + 3;
+      continue;
+    }
+    tags.lastIndex = start;
+    const match = tags.exec(input);
+    if (!match || match.index !== start) {
+      // An unfinished ordinary tag cannot prove that later attribute text
+      // contains an active script. Declarations and literal '<' are skipped.
+      if (/^<\/?[a-z]/i.test(input.slice(start, start + 3))) break;
+      cursor = start + 1;
+      continue;
+    }
+    cursor = tags.lastIndex;
+    const name = match[1].toLowerCase();
+    const closing = match[0].startsWith("</");
+    if (name === "template") {
+      templateDepth = Math.max(0, templateDepth + (closing ? -1 : 1));
+      continue;
+    }
+    if (closing) continue;
+    if (name === "plaintext") break;
+    if (
+      [
+        "script",
+        "style",
+        "textarea",
+        "title",
+        "xmp",
+        "iframe",
+        "noembed",
+        "noframes",
+        "noscript",
+      ].includes(name)
+    ) {
+      const close = new RegExp(`</${name}\\s*>`, "gi");
+      close.lastIndex = cursor;
+      const ending = close.exec(input);
+      const bodyEnd = ending?.index ?? input.length;
+      const attributes = readAttributes(match[2]);
+      if (
+        name === "script" &&
+        templateDepth === 0 &&
+        attributes.get("type")?.trim().toLowerCase() === "application/ld+json"
+      ) {
+        blocks.push(input.slice(cursor, bodyEnd).trim());
+      }
+      cursor = ending ? close.lastIndex : input.length;
+      continue;
+    }
+    if (name === "link" && templateDepth === 0)
+      links.push(readAttributes(match[2]));
+  }
+  return { blocks, links };
 }
 
 function canonicalCheck(href: string | undefined): RuleResult {
@@ -160,13 +215,10 @@ function optionalPolicy(label: string, value: unknown): RuleResult {
 export function analyzeSchemaInput(input: string): SchemaAnalysis {
   const trimmed = input.trim();
   const isJson = trimmed.startsWith("{") || trimmed.startsWith("[");
-  const html = isJson
-    ? ""
-    : input.replace(
-        /<!--[\s\S]*?-->|<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>[\s\S]*?<\/script\s*>/gi,
-        (match) => (match.startsWith("<!--") ? "" : match),
-      );
-  const blocks = isJson ? [trimmed] : extractJsonLdBlocks(html);
+  const metadata = isJson
+    ? { blocks: [trimmed], links: [] }
+    : inspectHtml(input);
+  const blocks = metadata.blocks;
   const errors: string[] = [];
   const parsed: unknown[] = [];
 
@@ -217,13 +269,7 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     "SoldOut",
   ].includes(availabilityName);
 
-  const metadataHtml = html.replace(
-    /<script\b((?:[^>"']|"[^"]*"|'[^']*')*)>[\s\S]*?<\/script\s*>/gi,
-    "",
-  );
-  const links = Array.from(
-    metadataHtml.matchAll(/<link\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi),
-  ).map((match) => readAttributes(match[1]));
+  const links = metadata.links;
   const hasRel = (attributes: Map<string, string>, rel: string) =>
     (attributes.get("rel") ?? "").toLowerCase().split(/\s+/).includes(rel);
   const canonicalHref = links
@@ -243,17 +289,17 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
 
   const checks: RuleResult[] = [
     {
-      label: "Product structured data",
+      label: "Product type",
       status: product ? "pass" : "fail",
       detail: product
-        ? `Product found: ${safeString(product.name) || "name not provided"}`
+        ? `Product type detected. Name: ${safeString(product.name) || "not provided"}. Other Product fields have not been validated.`
         : "No Product object found in JSON-LD.",
     },
     {
-      label: "Offer object",
+      label: "Nested Offer type",
       status: offer ? "pass" : "fail",
       detail: offer
-        ? "Offer object found."
+        ? "Typed Offer detected directly inside Product.offers. The first matching Offer is inspected."
         : "No Offer object found. Merchant listings usually need offer data.",
     },
     {

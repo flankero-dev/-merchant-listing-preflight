@@ -49,11 +49,11 @@ function GuidePage() {
 
           <div className="hero-actions">
             <Link className="btn primary" to="/#checker">
-              Run free preflight
+              Open checker
             </Link>
 
             <Link className="btn secondary" to="/#order">
-              Ask about an issue
+              Contact the developer
             </Link>
           </div>
         </section>
@@ -70,7 +70,7 @@ function GuidePage() {
           </article>
 
           <article className="article-card">
-            <h2>Likely causes</h2>
+            <h2>Possible causes</h2>
 
             <ul className="step-list">
               {guide.causes.map((item) => (
@@ -80,7 +80,7 @@ function GuidePage() {
           </article>
 
           <article className="article-card">
-            <h2>Quick preflight checks</h2>
+            <h2>Checks to make manually</h2>
 
             <ul className="step-list numbered">
               {guide.quickChecks.map((item) => (
@@ -90,7 +90,7 @@ function GuidePage() {
           </article>
 
           <article className="article-card">
-            <h2>Fix order</h2>
+            <h2>Next steps</h2>
 
             <ul className="step-list numbered">
               {guide.fixSteps.map((item) => (
@@ -121,12 +121,13 @@ function GuidePage() {
             <p>
               Use the export to identify affected products, then compare the
               feed, page and markup for the same product and variant. Keep the
-              evidence together before deciding what to change.
+              evidence together before deciding what to change. These are manual
+              steps; the checker does not visit the pages.
             </p>
           </div>
 
           <Link className="btn primary" to="/merchant-center-diagnostic-report">
-            Open evidence worksheet
+            Read evidence checklist
           </Link>
         </section>
 

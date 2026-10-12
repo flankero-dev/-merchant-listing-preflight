@@ -120,3 +120,11 @@ test("preserves raw field whitespace while normalizing issue grouping", () => {
   assert.equal(result.issueGroups[0].sample[0].Issue, " Warning ");
   assert.equal(result.issueGroups[0].issue, "Warning");
 });
+
+test("unrecognized or absent issue text is unrated rather than assumed low priority", () => {
+  const result = analyzeCsvText("ID,Issue\n1,Custom issue\n2,");
+  assert.deepEqual(
+    result.issueGroups.map((group) => group.priority),
+    ["Unrated", "Unrated"],
+  );
+});

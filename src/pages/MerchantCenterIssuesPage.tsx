@@ -19,16 +19,14 @@ function MerchantCenterIssuesPage() {
           </h1>
 
           <p>
-            Merchant Center issues usually happen when product feed data,
-            landing page content, structured data, canonical URLs or
-            account-level trust signals do not match what Google expects. This
-            checklist helps you identify the likely issue family before
-            requesting another review.
+            Start with the exact issue reported in Merchant Center. The
+            references below cover selected product-data issues and markup
+            checks; they are not a diagnosis of your store or account.
           </p>
 
           <div className="hero-actions">
             <Link className="btn primary" to="/#checker">
-              Run free preflight
+              Open checker
             </Link>
 
             <Link className="btn secondary" to="/guides">
@@ -41,11 +39,9 @@ function MerchantCenterIssuesPage() {
           <h2>Common Merchant Center issue families</h2>
 
           <p>
-            Many Merchant Center problems are not caused by one single field. A
-            product can be affected because the feed says one thing, the landing
-            page displays another thing, and the Product / Offer structured data
-            exposes a third value. The safest approach is to check the feed,
-            landing page, structured data and crawlable signals together.
+            For price and stock differences, compare the feed, page and markup
+            for the same item. For pending checks or URL issues, use the
+            relevant guide instead of assuming a data mismatch.
           </p>
 
           <div className="issue-hub-grid">
@@ -72,9 +68,9 @@ function MerchantCenterIssuesPage() {
               <h3>Feed data</h3>
               <p>
                 Check product ID, title, price, sale price, availability, link,
-                image link, target country and currency. Make sure the
-                affected-products CSV matches what your website actually
-                displays.
+                image link, target country and currency. Cross-reference the
+                exported issue with submitted product data and the intended
+                product page.
               </p>
             </div>
 
@@ -90,18 +86,17 @@ function MerchantCenterIssuesPage() {
             <div>
               <h3>Structured data</h3>
               <p>
-                Review Product and Offer JSON-LD for price, currency,
-                availability, canonical URL, shipping details and return policy
-                readiness.
+                Compare Product and Offer JSON-LD with page values. Check HTML
+                canonical links separately; they are not JSON-LD properties.
               </p>
             </div>
 
             <div>
-              <h3>Trust and review readiness</h3>
+              <h3>Separate account or policy issues</h3>
               <p>
-                Confirm that policy pages, contact details, shipping
-                information, return policy and checkout experience are
-                consistent before sending products back for review.
+                Use the exact account or policy notice and its official
+                guidance. Missing policies or ownership verification should not
+                be inferred from a pending product-page crawl.
               </p>
             </div>
           </div>
@@ -118,27 +113,26 @@ function MerchantCenterIssuesPage() {
           </p>
 
           <p>
-            Merchant Listing Preflight does not require your Google account
-            login. You can send the affected-products CSV, several affected
-            product URLs, a screenshot of the issue title, target country and
-            target currency.
+            The checker reads supplied data locally without a Google login. It
+            does not visit URLs or send your export. Collect page evidence
+            separately in your own notes.
           </p>
         </section>
 
         <section className="article-cta">
           <div>
-            <p className="eyebrow">Need a clear fix order?</p>
+            <p className="eyebrow">Evidence checklist</p>
 
             <h2>Record the evidence before making changes.</h2>
 
             <p>
               Keep observed values separate from likely causes. Use the
-              worksheet to track which source changed and how you verified it.
+              checklist to plan which source changed and how you verified it.
             </p>
           </div>
 
           <Link className="btn primary" to="/merchant-center-diagnostic-report">
-            Open evidence worksheet
+            Read evidence checklist
           </Link>
         </section>
       </main>

@@ -18,7 +18,7 @@ export default function CsvChecker() {
     setReading(true);
     try {
       if (file.size > 2_000_000)
-        throw new Error("Choose a CSV file smaller than 2 MB.");
+        throw new Error("Choose a CSV file no larger than 2 MB.");
       const text = await file.text();
       if (id === readId.current) setResult(analyzeCsvText(text, file.name));
     } catch (reason) {
@@ -132,7 +132,7 @@ export default function CsvChecker() {
                   <tr>
                     <th scope="col">Issue</th>
                     <th scope="col">Rows</th>
-                    <th scope="col">Priority</th>
+                    <th scope="col">Suggested priority</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,8 +171,9 @@ export default function CsvChecker() {
             </>
           )}
           <p className="pw-note">
-            Each row is grouped by its supplied issue text. Priority is a
-            heuristic; compare the original export before taking action.
+            Each row is grouped by its supplied issue text. Suggested priority
+            is a wording heuristic; Unrated means no supported rule matched.
+            Verify the issue before taking action.
           </p>
         </section>
       ) : (

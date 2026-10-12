@@ -1,6 +1,6 @@
 type CsvRow = Record<string, string>;
 
-type Priority = "High" | "Medium" | "Low";
+type Priority = "High" | "Medium" | "Unrated";
 
 export type CsvAnalysis = {
   fileName: string;
@@ -148,7 +148,7 @@ function getPriority(issue: string): Priority {
     return "Medium";
   }
 
-  return "Low";
+  return "Unrated";
 }
 
 export function analyzeCsvText(
@@ -272,7 +272,7 @@ export function analyzeCsvText(
       const priorityOrder: Record<Priority, number> = {
         High: 0,
         Medium: 1,
-        Low: 2,
+        Unrated: 2,
       };
 
       if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
@@ -294,19 +294,19 @@ export function analyzeCsvText(
 
   if (!detectedColumns.link) {
     warnings.push(
-      "No product URL / landing page column was detected. URL-level checks will need manual product URLs.",
+      "No product URL column was detected. Supply URLs separately if comparing landing pages manually.",
     );
   }
 
   if (!detectedColumns.price) {
     warnings.push(
-      "No price column was detected. Price mismatch analysis will require feed price data.",
+      "No price column was detected. Price comparisons remain a manual step; this checker groups recorded issue text.",
     );
   }
 
   if (!detectedColumns.availability) {
     warnings.push(
-      "No availability column was detected. Availability mismatch analysis will require stock data.",
+      "No availability column was detected. Stock comparisons remain a manual step; this checker groups recorded issue text.",
     );
   }
 
