@@ -42,7 +42,8 @@ test("prefers an exact column alias to a longer partial label", () => {
     "Approval Status,Status,ID\nApproved,Disapproved,1",
   );
   assert.equal(result.detectedColumns.status, "Status");
-  assert.equal(result.issueGroups[0].issue, "Disapproved");
+  assert.equal(result.issueGroups.length, 0);
+  assert.deepEqual(result.statusGroups, [{ status: "Disapproved", count: 1 }]);
 });
 test("does not mistake grid for ID", () => {
   assert.equal(
@@ -64,11 +65,13 @@ test("also rejects duplicate headers that differ only in casing", () => {
 test("does not claim status-based grouping when neither column exists", () => {
   const result = analyzeCsvText("ID,Title\n1,Cup");
   assert.match(result.warnings[0], /No Issue or Status/);
-  assert.equal(result.issueGroups[0].issue, "No issue column detected");
+  assert.equal(result.issueGroups.length, 0);
+  assert.equal(result.rowClassification.unclassified, 1);
 });
 test("distinguishes an empty issue cell from a missing column", () => {
   const result = analyzeCsvText("ID,Issue\n1,");
-  assert.equal(result.issueGroups[0].issue, "No issue provided");
+  assert.equal(result.issueGroups.length, 0);
+  assert.equal(result.rowClassification.withoutIssue, 1);
 });
 test("rejects unclosed quoted fields", () => {
   const result = analyzeCsvText('ID,Title,Issue\n1,"Cup,Warning');
@@ -121,10 +124,69 @@ test("preserves raw field whitespace while normalizing issue grouping", () => {
   assert.equal(result.issueGroups[0].issue, "Warning");
 });
 
-test("unrecognized or absent issue text is unrated rather than assumed low priority", () => {
+test("unrecognized issue text is Unrated while absent values create no group", () => {
   const result = analyzeCsvText("ID,Issue\n1,Custom issue\n2,");
   assert.deepEqual(
     result.issueGroups.map((group) => group.priority),
-    ["Unrated", "Unrated"],
+    ["Unrated"],
   );
+  assert.equal(result.rowClassification.withoutIssue, 1);
+});
+
+test("status-only rows are not fabricated issue groups", () => {
+  const result = analyzeCsvText(
+    'ID,Status\n1,Approved\n2,Disapproved\n3,\n4," "',
+  );
+  assert.equal(result.rowsCount, 4);
+  assert.deepEqual(result.issueGroups, []);
+  assert.deepEqual(result.statusGroups, [
+    { status: "Approved", count: 1 },
+    { status: "Disapproved", count: 1 },
+  ]);
+  assert.deepEqual(result.rowClassification, {
+    withIssue: 0,
+    withoutIssue: 0,
+    statusOnly: 2,
+    unclassified: 2,
+  });
+});
+test("Issue wins over Status and blank Issue never falls back to status", () => {
+  const result = analyzeCsvText(
+    'ID,Issue,Status\n1,Custom issue,Approved\n2,,Disapproved\n3," ",Pending\n4,Warning,',
+  );
+  assert.equal(result.rowsCount, 4);
+  assert.deepEqual(result.statusGroups, []);
+  assert.deepEqual(result.rowClassification, {
+    withIssue: 2,
+    withoutIssue: 2,
+    statusOnly: 0,
+    unclassified: 0,
+  });
+  assert.deepEqual(result.issueGroups.map((g) => g.issue).sort(), [
+    "Custom issue",
+    "Warning",
+  ]);
+});
+test("all classified row counts sum to accepted product rows", () => {
+  for (const csv of [
+    "ID,Title\n1,Cup\n2,Bowl",
+    "ID,Issue\n1,Warning\n2,",
+    "ID,Status\n1,Approved\n2,",
+    "ID,Issue",
+    "ID,Issue\n1,Warning,extra",
+  ]) {
+    const result = analyzeCsvText(csv);
+    assert.equal(
+      Object.values(result.rowClassification).reduce(
+        (total, count) => total + count,
+        0,
+      ),
+      result.rowsCount,
+    );
+    assert.equal(
+      result.issueGroups.reduce((total, group) => total + group.count, 0),
+      result.rowClassification.withIssue,
+    );
+    if (!result.rowsCount) assert.deepEqual(result.statusGroups, []);
+  }
 });
