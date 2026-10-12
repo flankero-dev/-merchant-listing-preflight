@@ -68,5 +68,6 @@ Node tests cover the analyzers. Playwright checks sample data, uploads and error
 - Canonical checks require an absolute HTTP(S) URL for a pass; relative references need a page URL. Destinations are not fetched. Hreflang, shipping and returns remain warnings because their complete requirements are not validated.
 - Raw CSV field spaces are retained; headers, issue grouping and URL samples are normalized separately.
 - Priority is a heuristic based on issue text. Passing markup checks does not establish Google eligibility or confirm live stock or prices.
+- The published site includes hosting-provided Cloudflare Web Analytics; the Privacy page distinguishes this from local checker input processing.
 - The optional contact form opens a draft in the user's email app. It does not send mail or submit data to a backend.
 - Chromium browser workflows are covered. A full assistive-technology and cross-browser audit remains outside the tested scope.
