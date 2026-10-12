@@ -57,3 +57,9 @@ Evidence: [browser suite](../tests/browser-smoke.mjs).
 The form validates inputs and constructs a URL-encoded `mailto` draft. There is no request-submission backend or success state implying that a message was sent. The user attaches any files and sends the email in their own email application.
 
 An optional contact path can coexist with the utility, but it must not be presented as an automatic diagnostic report generator.
+
+## Product content follows the implementation
+
+Reference pages explain input contracts and manual evidence collection. The former report-service URL remains available as a worksheet, without pricing or a report-delivery promise. Privacy describes in-memory analysis and the separate email draft. The draft form has bounded inputs and a persistent, announced clipboard result, including a manual-copy fallback.
+
+A shared reference-page component keeps headings, cards and links consistent. One skip link targets the active main element; the hidden checker never duplicates that target ID. CSV and markup completion messages use stable live regions.

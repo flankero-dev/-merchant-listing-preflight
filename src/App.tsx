@@ -20,6 +20,7 @@ function App() {
   return (
     <div className="site-shell">
       <SEOHead />
+      <a className="pw-skip" href="#content">Skip to content</a>
       <SiteHeader />
       {/* Keep inputs and results in memory while browsing reference pages.
           A full reload clears them; uploaded data is never written to storage. */}

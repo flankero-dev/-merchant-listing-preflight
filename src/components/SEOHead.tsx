@@ -35,9 +35,9 @@ const seoByPath: Record<string, SeoData> = {
   },
   "/merchant-center-diagnostic-report": {
     title:
-      "Google Merchant Center Diagnostic Report — Merchant Listing Preflight",
+      "Product-data Evidence Worksheet — Merchant Preflight",
     description:
-      "Fixed-scope Google Merchant Center diagnostic reports for product disapprovals, mismatched price, availability, domains, landing pages and structured data issues.",
+      "A manual evidence worksheet for product-data investigations: source values, hypotheses, changes and verification.",
   },
   "/guides": {
     title: "Merchant Center Issue Guides — Merchant Listing Preflight",
@@ -51,14 +51,14 @@ const seoByPath: Record<string, SeoData> = {
       "A fictional worked example of a product price investigation, with evidence notes and a fix checklist. Product data and findings are illustrative.",
   },
   "/terms": {
-    title: "Terms of Service — Merchant Listing Preflight",
+    title: "Usage and Limits — Merchant Preflight",
     description:
-      "Terms for Merchant Listing Preflight diagnostic reports and Google Merchant Center issue preparation service.",
+      "Supported inputs, local analysis boundaries, fictional examples and optional email contact.",
   },
   "/privacy": {
-    title: "Privacy Policy — Merchant Listing Preflight",
+    title: "Privacy and Data — Merchant Preflight",
     description:
-      "Privacy policy for Merchant Listing Preflight diagnostic report requests and information handling.",
+      "How files, pasted markup and optional email drafts are handled by the current application.",
   },
 };
 

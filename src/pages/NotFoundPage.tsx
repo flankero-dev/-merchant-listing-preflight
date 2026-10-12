@@ -4,7 +4,7 @@ function NotFoundPage() {
   return (
     <div className="page">
 
-      <main className="content-page">
+      <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <p className="eyebrow">404</p>
 
@@ -57,11 +57,10 @@ function NotFoundPage() {
               className="issue-hub-card"
               to="/merchant-center-diagnostic-report"
             >
-              <span>Diagnostic report</span>
-              <h2>Merchant Center diagnostic report</h2>
+              <span>Evidence worksheet</span>
+              <h2>Evidence worksheet</h2>
               <p>
-                See what the fixed-scope diagnostic report includes and what you
-                need to send.
+                Record source values, hypotheses and the steps used to verify a change.
               </p>
               <strong>Open page →</strong>
             </Link>

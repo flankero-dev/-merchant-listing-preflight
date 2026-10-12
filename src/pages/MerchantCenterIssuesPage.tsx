@@ -6,7 +6,7 @@ function MerchantCenterIssuesPage() {
   return (
     <div className="page">
 
-      <main className="content-page">
+      <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">
             <Link to="/">Home</Link>
@@ -110,10 +110,10 @@ function MerchantCenterIssuesPage() {
         </section>
 
         <section className="article-section">
-          <h2>When a diagnostic report is useful</h2>
+          <h2>When to collect more evidence</h2>
 
           <p>
-            A diagnostic report is useful when the same issue affects multiple
+            Collect more evidence when the same issue affects multiple
             products, when Merchant Center keeps rejecting products after fixes,
             or when you are not sure whether the source of the problem is the
             feed, the landing page, structured data, redirects or account-level
@@ -132,16 +132,16 @@ function MerchantCenterIssuesPage() {
           <div>
             <p className="eyebrow">Need a clear fix order?</p>
 
-            <h2>Request a fixed-scope Merchant Center diagnostic report.</h2>
+            <h2>Record the evidence before making changes.</h2>
 
             <p>
-              Get likely root cause, affected product examples, evidence notes,
-              priority fix order and review preparation checklist.
+              Keep observed values separate from likely causes. Use the worksheet
+              to track which source changed and how you verified it.
             </p>
           </div>
 
-          <Link className="btn primary" to="/#order">
-            Request diagnostic report
+          <Link className="btn primary" to="/merchant-center-diagnostic-report">
+            Open evidence worksheet
           </Link>
         </section>
       </main>

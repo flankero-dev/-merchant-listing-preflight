@@ -203,7 +203,7 @@ try {
   await page.getByRole("heading", { level: 1, name: "Compare product prices" }).waitFor();
   await page.waitForFunction(() => window.scrollY === 0);
   // The header CTA is hidden on mobile; use the visible action in the guide hero.
-  await page.locator(".content-hero").getByRole("link", { name: "Request diagnostic report", exact: true }).click();
+  await page.locator(".content-hero").getByRole("link", { name: "Ask about an issue", exact: true }).click();
   await page.locator("#order details[open]").waitFor();
   assert.equal(await page.getByLabel("Store URL", { exact: true }).isVisible(), true);
   await page.reload();
@@ -298,6 +298,11 @@ try {
       await page.goto(`http://127.0.0.1:4175${path}`);
       await page.locator("h1:visible").waitFor();
       assert.equal(await page.locator("h1:visible").count(), 1);
+      assert.equal(await page.locator("#content").count(), 1, "one active skip-link destination");
+      const skip = page.getByRole("link", { name: "Skip to content", exact: true });
+      await skip.focus();
+      await page.keyboard.press("Enter");
+      await page.waitForFunction(() => document.activeElement?.id === "content");
       assert.equal(await page.getByRole("banner").count(), 1);
       assert.equal(await page.getByRole("contentinfo").count(), 1);
       const menu = page.getByRole("navigation", { name: "Main navigation" });
@@ -341,6 +346,22 @@ try {
       await page.waitForURL(`**/${name.toLowerCase()}`);
       await page.getByRole("heading", { level: 1 }).waitFor();
     }
+  }
+  await page.goto("http://127.0.0.1:4175/#order");
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("button", { name: "Copy email", exact: true }).click();
+  await page.getByRole("status").filter({ hasText: "Email copied." }).waitFor();
+  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), "flankero4697@gmail.com");
+  await page.evaluate(() => { navigator.clipboard.writeText = async () => { throw new Error("denied"); }; });
+  await page.getByRole("button", { name: "Copy email", exact: true }).click();
+  await page.getByRole("status").filter({ hasText: "Copy manually:" }).waitFor();
+  assert.equal(await page.getByLabel("Issue details", { exact: true }).getAttribute("maxlength"), "2000");
+  await page.screenshot({ path: "docs/contact-desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ["/privacy", "/terms", "/merchant-center-diagnostic-report"]) {
+    await page.goto(`http://127.0.0.1:4175${path}`);
+    assert.doesNotMatch(await page.locator("main:visible").innerText(), /Express Report|Store Audit|Pre-Appeal|\$29|\$79|\$149/);
+    await page.screenshot({ path: `docs/reference${path.replaceAll("/", "-")}.png`, fullPage: true });
   }
   assert.deepEqual(errors, []);
   console.log(

@@ -6,7 +6,7 @@ function GuidesIndexPage() {
   return (
     <div className="page">
 
-      <main className="content-page">
+      <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">
             <Link to="/">Home</Link>
@@ -30,7 +30,7 @@ function GuidesIndexPage() {
             </Link>
 
             <Link className="btn secondary" to="/#order">
-              Request diagnostic report
+              Ask about an issue
             </Link>
           </div>
         </section>
@@ -55,18 +55,18 @@ function GuidesIndexPage() {
 
         <section className="article-cta">
           <div>
-            <p className="eyebrow">Need a report?</p>
+            <p className="eyebrow">Keep your evidence together</p>
 
-            <h2>Get a clear diagnosis before requesting another review.</h2>
+            <h2>Record what you observed.</h2>
 
             <p>
-              If your issue affects real products, upload the CSV, send affected
-              URLs and request a fixed-scope diagnostic report.
+              Use the worked example to record source values, hypotheses and
+              verification steps for the same product and variant.
             </p>
           </div>
 
-          <Link className="btn primary" to="/#order">
-            Request diagnostic report
+          <Link className="btn primary" to="/sample-report">
+            View worked example
           </Link>
         </section>
       </main>

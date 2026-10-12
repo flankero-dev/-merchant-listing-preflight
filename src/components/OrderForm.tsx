@@ -24,12 +24,12 @@ function OrderForm() {
 
   const mailtoLink = useMemo(() => {
     const subject = encodeURIComponent(
-      `Merchant Listing Diagnostic Request — ${issueType}`,
+      `Merchant Preflight question — ${issueType}`,
     );
 
     const body = encodeURIComponent(`Hi,
 
-I want to request a Merchant Listing diagnostic report.
+I have a question about this product-data issue.
 
 Store URL:
 ${storeUrl || "[not provided]"}
@@ -67,29 +67,26 @@ Thanks.`);
       setCopyStatus(`Copy manually: ${CONTACT_EMAIL}`);
     }
 
-    window.setTimeout(() => {
-      setCopyStatus("");
-    }, 2500);
+
   };
 
   return (
     <div className="order-form-card">
       <div className="section-heading order-heading">
         <div>
-          <div className="eyebrow">Order diagnostic report</div>
-          <h2>Request a clear Merchant Center diagnosis</h2>
+          <div className="eyebrow">Optional contact</div>
+          <h2>Ask about a product-data issue</h2>
         </div>
 
         <p>
-          No Google login required. Send your store URL, issue type and
-          affected-products CSV. You receive a clear report with likely root
-          cause, fix order and review preparation.
+          Prepare an email with the store URL, issue and relevant context.
+          No message is sent by this website.
         </p>
       </div>
 
       <div className="order-grid">
         <div className="order-copy">
-          <h3>What to send after request</h3>
+          <h3>Useful context</h3>
 
           <ul className="step-list">
             <li>Affected-products CSV from Merchant Center</li>
@@ -102,9 +99,8 @@ Thanks.`);
           <div className="notice-box">
             <strong>Important</strong>
             <p>
-              This is a diagnostic and preparation service. It does not
-              guarantee Google approval, account reinstatement or policy
-              reversal.
+              Use redacted examples. Do not send passwords, recovery codes or
+              account access. A local check cannot establish Google approval.
             </p>
           </div>
         </div>
@@ -121,6 +117,7 @@ Thanks.`);
           </label>
           <input
             id="store-url"
+            maxLength={2048}
             required
             type="url"
             pattern="https?://.+"
@@ -135,6 +132,7 @@ Thanks.`);
           </label>
           <input
             id="client-email"
+            maxLength={254}
             required
             type="email"
             value={clientEmail}
@@ -167,6 +165,7 @@ Thanks.`);
                 Target country
               </label>
               <input
+                maxLength={80}
                 id="target-country"
                 type="text"
                 value={targetCountry}
@@ -195,6 +194,7 @@ Thanks.`);
             Issue details
           </label>
           <textarea
+            maxLength={2000}
             id="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -209,7 +209,7 @@ Thanks.`);
 
           <div className="email-fallback">
             <p>
-              If your email app does not open, send your request directly to:
+              If your email app does not open, you can use this address:
             </p>
 
             <div className="email-copy-row">
@@ -224,7 +224,7 @@ Thanks.`);
               </button>
             </div>
 
-            {copyStatus && <span className="copy-status">{copyStatus}</span>}
+            <span className="copy-status" role="status">{copyStatus}</span>
           </div>
 
           <p className="form-note">
