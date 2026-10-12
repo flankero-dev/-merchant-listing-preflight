@@ -30,14 +30,17 @@ export default function SchemaChecker() {
   return (
     <>
       <p className="pw-sr-only" role="status">
-        {result ? "Markup analysis complete. Review the individual checks and any errors." : ""}
+        {result
+          ? "Markup analysis complete. Review the individual checks and any errors."
+          : ""}
       </p>
       <div className="pw-input-panel">
         <div>
           <h2>Inspect Product / Offer markup</h2>
           <p>
             Paste JSON-LD or HTML containing a JSON-LD script. Markup is
-            inspected without executing it.
+            inspected without executing it. Shipping, returns and hreflang are
+            review reminders, not validated passes.
           </p>
         </div>
         <label className="pw-markup">

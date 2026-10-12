@@ -8,12 +8,13 @@ function GuidePage() {
   if (!guide) {
     return (
       <div className="page">
-
         <main className="content-page" id="content" tabIndex={-1}>
           <section className="content-hero">
             <p className="eyebrow">404</p>
             <h1>Guide not found</h1>
-            <p>This guide is unavailable. Choose a topic from the guide index.</p>
+            <p>
+              This guide is unavailable. Choose a topic from the guide index.
+            </p>
 
             <Link className="btn primary" to="/guides">
               Browse guides
@@ -30,7 +31,6 @@ function GuidePage() {
 
   return (
     <div className="page">
-
       <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">
@@ -100,9 +100,15 @@ function GuidePage() {
           </article>
         </section>
 
-        <section className="article-card guide-reference" aria-labelledby="reference-heading">
+        <section
+          className="article-card guide-reference"
+          aria-labelledby="reference-heading"
+        >
           <h2 id="reference-heading">Official reference</h2>
-          <p>Use this checklist to collect evidence. Check Google's current requirements before changing product data or requesting a review.</p>
+          <p>
+            Use this checklist to collect evidence. Check Google's current
+            requirements before changing product data or requesting a review.
+          </p>
           <a href={guide.reference.href}>{guide.reference.title} ↗</a>
         </section>
 
@@ -113,9 +119,9 @@ function GuidePage() {
             <h2>Compare the source values.</h2>
 
             <p>
-              Use the export to identify affected products, then compare the feed,
-              page and markup for the same product and variant. Keep the evidence
-              together before deciding what to change.
+              Use the export to identify affected products, then compare the
+              feed, page and markup for the same product and variant. Keep the
+              evidence together before deciding what to change.
             </p>
           </div>
 

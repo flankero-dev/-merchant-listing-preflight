@@ -7,7 +7,9 @@ export default function SiteHeader() {
         Merchant <strong>Preflight</strong>
       </Link>
       <nav aria-label="Main navigation">
-        <NavLink to="/" end>Checker</NavLink>
+        <NavLink to="/" end>
+          Checker
+        </NavLink>
         <NavLink to="/merchant-center-issues">Issue reference</NavLink>
         <NavLink to="/guides">Guides</NavLink>
         <NavLink to="/sample-report">Sample report</NavLink>

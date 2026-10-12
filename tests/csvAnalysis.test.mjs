@@ -3,19 +3,30 @@ import assert from "node:assert/strict";
 import { analyzeCsvText } from "../src/lib/csvAnalysis.ts";
 
 test("groups affected products and sorts by severity", () => {
-  const result = analyzeCsvText("Item ID,Issue,Link\na,Warning,https://example.com/a\nb,Mismatched product price,https://example.com/b\nc,Mismatched product price,https://example.com/c");
+  const result = analyzeCsvText(
+    "Item ID,Issue,Link\na,Warning,https://example.com/a\nb,Mismatched product price,https://example.com/b\nc,Mismatched product price,https://example.com/c",
+  );
   assert.equal(result.rowsCount, 3);
-  assert.deepEqual(result.issueGroups.map(({ issue, count, priority }) => ({ issue, count, priority })), [
-    { issue: "Mismatched product price", count: 2, priority: "High" },
-    { issue: "Warning", count: 1, priority: "Medium" },
-  ]);
+  assert.deepEqual(
+    result.issueGroups.map(({ issue, count, priority }) => ({
+      issue,
+      count,
+      priority,
+    })),
+    [
+      { issue: "Mismatched product price", count: 2, priority: "High" },
+      { issue: "Warning", count: 1, priority: "Medium" },
+    ],
+  );
 });
 test("preserves commas and escaped quotes in quoted fields", () => {
   const result = analyzeCsvText('ID,Title,Issue\n1,"Cup, ""blue""",Warning');
   assert.equal(result.issueGroups[0].sample[0].Title, 'Cup, "blue"');
 });
 test("supports embedded line breaks and CRLF records", () => {
-  const result = analyzeCsvText('ID,Title,Issue\r\n1,"Two\r\nlines",Warning\r\n');
+  const result = analyzeCsvText(
+    'ID,Title,Issue\r\n1,"Two\r\nlines",Warning\r\n',
+  );
   assert.equal(result.rowsCount, 1);
   assert.equal(result.issueGroups[0].sample[0].Title, "Two\nlines");
 });
@@ -27,12 +38,17 @@ test("accepts UTF-8 BOM headers", () => {
   assert.equal(result.detectedColumns.id, "Item ID");
 });
 test("prefers an exact column alias to a longer partial label", () => {
-  const result = analyzeCsvText("Approval Status,Status,ID\nApproved,Disapproved,1");
+  const result = analyzeCsvText(
+    "Approval Status,Status,ID\nApproved,Disapproved,1",
+  );
   assert.equal(result.detectedColumns.status, "Status");
   assert.equal(result.issueGroups[0].issue, "Disapproved");
 });
 test("does not mistake grid for ID", () => {
-  assert.equal(analyzeCsvText("Grid,Issue\n123,Warning").detectedColumns.id, undefined);
+  assert.equal(
+    analyzeCsvText("Grid,Issue\n123,Warning").detectedColumns.id,
+    undefined,
+  );
 });
 test("rejects duplicate headers instead of silently overwriting values", () => {
   const result = analyzeCsvText("ID,Issue,Issue\n1,Warning,Disapproved");
@@ -40,7 +56,10 @@ test("rejects duplicate headers instead of silently overwriting values", () => {
   assert.match(result.warnings[0], /duplicate column names/);
 });
 test("also rejects duplicate headers that differ only in casing", () => {
-  assert.match(analyzeCsvText("ID,Issue,issue\n1,Warning,Disapproved").warnings[0], /duplicate/);
+  assert.match(
+    analyzeCsvText("ID,Issue,issue\n1,Warning,Disapproved").warnings[0],
+    /duplicate/,
+  );
 });
 test("does not claim status-based grouping when neither column exists", () => {
   const result = analyzeCsvText("ID,Title\n1,Cup");
@@ -85,7 +104,19 @@ test("bounds input size before parsing", () => {
 });
 
 test("URL samples are distinct and include later unique products", () => {
-  const result = analyzeCsvText("Issue,Link\nWarning,https://example.com/a\nWarning,https://example.com/a\nWarning,https://example.com/b");
+  const result = analyzeCsvText(
+    "Issue,Link\nWarning,https://example.com/a\nWarning,https://example.com/a\nWarning,https://example.com/b",
+  );
   assert.equal(result.rowsCount, 3);
-  assert.deepEqual(result.topUrls, ["https://example.com/a", "https://example.com/b"]);
+  assert.deepEqual(result.topUrls, [
+    "https://example.com/a",
+    "https://example.com/b",
+  ]);
+});
+
+test("preserves raw field whitespace while normalizing issue grouping", () => {
+  const result = analyzeCsvText('ID,Title,Issue\n1,"  Cup  "," Warning "');
+  assert.equal(result.issueGroups[0].sample[0].Title, "  Cup  ");
+  assert.equal(result.issueGroups[0].sample[0].Issue, " Warning ");
+  assert.equal(result.issueGroups[0].issue, "Warning");
 });
