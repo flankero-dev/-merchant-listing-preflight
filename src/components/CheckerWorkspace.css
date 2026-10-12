@@ -28,6 +28,9 @@
   gap: 24px;
 }
 .pw-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   color: #eef4f2 !important;
   font-size: 19px;
   text-decoration: none;
@@ -464,4 +467,16 @@
 .pw-contact [role="status"] {
   margin-left: 12px;
   font-size: 13px;
+}
+
+.pw-brand img {
+  flex-shrink: 0;
+}
+.pw-row-summary {
+  margin: 22px 0;
+}
+
+.pw-detected dd::before {
+  content: "→ ";
+  color: #aebfc3;
 }

@@ -10,7 +10,7 @@ export default function AffectedProductsCsvCheckerPage() {
           title: "Choose an export",
           items: [
             "Use a comma-separated file with one header row and one row per product.",
-            "An Issue column is preferred. If it is absent, a recognised Status column is used and the result explains that fallback.",
+            "Use an Issue column for issue grouping. When it is absent, a recognised Status column is grouped separately without inferring product issues.",
             "The file limit is 2 MB and 10,000 product rows.",
           ],
         },
@@ -18,8 +18,8 @@ export default function AffectedProductsCsvCheckerPage() {
           title: "Read the result",
           items: [
             "Product rows counts accepted rows; repeated product URLs still count as separate rows.",
-            "Issue groups counts distinct supplied issue text. Suggested priority is a heuristic, not a new diagnosis; unrecognised text is Unrated.",
-            "Detected columns shows the matched aliases; sample URLs shows up to five distinct values from the export.",
+            "Issue groups counts distinct nonempty Issue values. Blank values and rows without an Issue column do not create issue groups. Suggested priority is a heuristic; unrecognised text is Unrated.",
+            "Row counts distinguish supplied issue text, blank Issue values, status-only rows and unclassified rows. Detected columns maps readable fields to your CSV headers; sample URLs lists up to five distinct values.",
           ],
         },
         {

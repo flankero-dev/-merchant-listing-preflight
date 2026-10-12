@@ -4,7 +4,10 @@ export default function SiteHeader() {
   return (
     <header className="pw-header">
       <Link className="pw-brand" to="/">
-        Merchant <strong>Preflight</strong>
+        <img src="/favicon.svg" width="24" height="24" alt="" />
+        <span>
+          Merchant <strong>Preflight</strong>
+        </span>
       </Link>
       <nav aria-label="Main navigation">
         <NavLink to="/" end>

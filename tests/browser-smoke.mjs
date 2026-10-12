@@ -188,6 +188,101 @@ try {
   await page
     .getByRole("heading", { name: "quoted.csv", exact: true })
     .waitFor();
+  // An accepted product row is not automatically a recorded issue.
+  for (const [name, contents, issueCount, summary, statusGroupCount] of [
+    ["no-issue", "ID,Title\n1,Cup", 0, "Unclassified: 1", 0],
+    ["blank-issue", 'ID,Issue\n1,\n2," "', 0, "Blank Issue: 2", 0],
+    [
+      "status-only",
+      "ID,Status\n1,Approved\n2,Disapproved\n3,",
+      0,
+      "Status only: 2",
+      1,
+    ],
+    ["empty-status", "ID,Status\n1,", 0, "Unclassified: 1", 0],
+    [
+      "both",
+      "ID,Issue,Status\n1,,Disapproved\n2,Custom issue,Approved",
+      1,
+      "Blank Issue: 1",
+      0,
+    ],
+    ["headers-only", "ID,Issue", 0, "Rows with issue text: 0", 0],
+  ]) {
+    await file.setInputFiles({
+      name: `${name}.csv`,
+      mimeType: "text/csv",
+      buffer: Buffer.from(contents),
+    });
+    await csv
+      .getByRole("heading", { name: `${name}.csv`, exact: true })
+      .waitFor();
+    assert.equal(await csv.locator("tbody tr").count(), issueCount);
+    assert.match(
+      await csv.locator(".pw-row-summary").innerText(),
+      new RegExp(summary),
+    );
+    assert.equal(
+      await csv
+        .getByRole("heading", { name: "Status groups", exact: true })
+        .count(),
+      statusGroupCount,
+    );
+    assert.equal(
+      await csv
+        .locator(".pw-stats div")
+        .filter({ hasText: "Issue groups" })
+        .locator("strong")
+        .innerText(),
+      String(issueCount),
+    );
+    assert.doesNotMatch(
+      await csv.innerText(),
+      /No issue provided|No issue column detected/,
+    );
+    if (name !== "headers-only")
+      assert.match(
+        await csv.locator(".pw-columns").first().innerText(),
+        /Product title/,
+      );
+  }
+  await file.setInputFiles({
+    name: "alias.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(
+      "Offer ID,Product title,Diagnostic issue,Final URL\n1,Cup,Warning,https://example.com/cup",
+    ),
+  });
+  await csv.getByRole("heading", { name: "alias.csv", exact: true }).waitFor();
+  const detectedFields = csv.locator(".pw-columns").first();
+  assert.match(
+    await detectedFields.innerText(),
+    /Product title\s+Product title/,
+  );
+  assert.match(await detectedFields.innerText(), /Product URL\s+Final URL/);
+  assert.match(await detectedFields.innerText(), /Product ID\s+Offer ID/);
+  const sourceLink = page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "Source code", exact: true });
+  assert.equal(
+    await sourceLink.getAttribute("href"),
+    "https://github.com/flankero-dev/-merchant-listing-preflight",
+  );
+  await sourceLink.focus();
+  assert.equal(
+    await sourceLink.evaluate((el) => el === document.activeElement),
+    true,
+  );
+  const brand = page
+    .getByRole("banner")
+    .getByRole("link", { name: "Merchant Preflight", exact: true });
+  assert.equal(await brand.locator("img").getAttribute("alt"), "");
+  assert.equal(
+    await brand
+      .locator("img")
+      .evaluate((img) => img.complete && img.naturalWidth > 0),
+    true,
+  );
   await file.setInputFiles({
     name: "malformed.csv",
     mimeType: "text/csv",
@@ -458,7 +553,7 @@ try {
       }
       assert.equal(
         await page.getByRole("link", { name: /Source code/ }).count(),
-        0,
+        1,
       );
       assert.equal(
         await page.locator("main *").evaluateAll((elements) =>

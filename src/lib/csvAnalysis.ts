@@ -15,6 +15,13 @@ export type CsvAnalysis = {
     availability?: string;
     status?: string;
   };
+  rowClassification: {
+    withIssue: number;
+    withoutIssue: number;
+    statusOnly: number;
+    unclassified: number;
+  };
+  statusGroups: { status: string; count: number }[];
   issueGroups: {
     issue: string;
     count: number;
@@ -164,6 +171,13 @@ export function analyzeCsvText(
       rowsCount: 0,
       headers: [],
       detectedColumns: {},
+      rowClassification: {
+        withIssue: 0,
+        withoutIssue: 0,
+        statusOnly: 0,
+        unclassified: 0,
+      },
+      statusGroups: [],
       issueGroups: [],
       topUrls: [],
       warnings: [
@@ -193,6 +207,13 @@ export function analyzeCsvText(
       rowsCount: 0,
       headers: rawHeaders,
       detectedColumns: {},
+      rowClassification: {
+        withIssue: 0,
+        withoutIssue: 0,
+        statusOnly: 0,
+        unclassified: 0,
+      },
+      statusGroups: [],
       issueGroups: [],
       topUrls: [],
       warnings: [
@@ -209,6 +230,13 @@ export function analyzeCsvText(
       rowsCount: 0,
       headers: matrix[0] ?? [],
       detectedColumns: {},
+      rowClassification: {
+        withIssue: 0,
+        withoutIssue: 0,
+        statusOnly: 0,
+        unclassified: 0,
+      },
+      statusGroups: [],
       issueGroups: [],
       topUrls: [],
       warnings: ["CSV looks empty or has no product rows."],
@@ -248,18 +276,38 @@ export function analyzeCsvText(
     status: findColumn(headers, ["status", "approval status", "item status"]),
   };
 
-  const issueSource = detectedColumns.issue || detectedColumns.status;
-
+  const rowClassification = {
+    withIssue: 0,
+    withoutIssue: 0,
+    statusOnly: 0,
+    unclassified: 0,
+  };
   const grouped = new Map<string, CsvRow[]>();
+  const statuses = new Map<string, number>();
 
   rows.forEach((row) => {
-    const issue = issueSource ? row[issueSource]?.trim() : "";
-    const key =
-      issue || (issueSource ? "No issue provided" : "No issue column detected");
-    const current = grouped.get(key) ?? [];
-    current.push(row);
-    grouped.set(key, current);
+    if (detectedColumns.issue) {
+      const issue = row[detectedColumns.issue].trim();
+      if (issue) {
+        rowClassification.withIssue += 1;
+        const current = grouped.get(issue) ?? [];
+        current.push(row);
+        grouped.set(issue, current);
+      } else rowClassification.withoutIssue += 1;
+    } else {
+      const status = detectedColumns.status
+        ? row[detectedColumns.status].trim()
+        : "";
+      if (status) {
+        rowClassification.statusOnly += 1;
+        statuses.set(status, (statuses.get(status) ?? 0) + 1);
+      } else rowClassification.unclassified += 1;
+    }
   });
+  const statusGroups = Array.from(statuses, ([status, count]) => ({
+    status,
+    count,
+  }));
 
   const issueGroups = Array.from(grouped.entries())
     .map(([issue, groupRows]) => ({
@@ -287,8 +335,8 @@ export function analyzeCsvText(
   if (!detectedColumns.issue) {
     warnings.push(
       detectedColumns.status
-        ? "No clear Issue column was detected. The checker grouped products by status instead."
-        : "No Issue or Status column was detected. Products could not be classified by issue.",
+        ? "No Issue column was detected. Status values are grouped separately; they do not identify product issues."
+        : "No Issue or Status column was detected. These rows cannot be classified by issue.",
     );
   }
 
@@ -325,6 +373,8 @@ export function analyzeCsvText(
     rowsCount: rows.length,
     headers,
     detectedColumns,
+    rowClassification,
+    statusGroups,
     issueGroups,
     warnings,
     topUrls,

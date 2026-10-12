@@ -59,3 +59,7 @@ The main navigation contains Checker and Guides. The separate issue hub duplicat
 All six issue-specific guides retain their official links and substantive checks. Introductory symptoms, repeated calls to contact the developer and arbitrary related-guide cards were removed. Possible causes are optional reading. The price example is one comparison table with three next steps, rather than eight report sections.
 
 Contact is an email link and clipboard button. Checker inputs are never attached or sent. The manual-copy fallback is announced persistently. The previous form fields and their unused CSS were removed.
+
+## CSV row classification
+
+Product rows counts every accepted row. Issue groups uses only nonempty values from an Issue column; blank Issue cells never create invented issue groups. If Issue is absent, Status groups preserves the supplied status information without treating Approved, Disapproved or other labels as diagnoses. Four mutually exclusive row counts account for the entire accepted export. When both columns exist, Issue takes precedence, including its blank cells.

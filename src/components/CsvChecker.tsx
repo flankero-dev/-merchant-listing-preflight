@@ -2,6 +2,16 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { analyzeCsvText, type CsvAnalysis } from "../lib/csvAnalysis";
 import { demoCsv } from "./checkerSamples";
 
+const fieldLabels: Record<keyof CsvAnalysis["detectedColumns"], string> = {
+  issue: "Issue",
+  title: "Product title",
+  link: "Product URL",
+  id: "Product ID",
+  price: "Price",
+  availability: "Availability",
+  status: "Status",
+};
+
 export default function CsvChecker() {
   const [result, setResult] = useState<CsvAnalysis | null>(null);
   const [error, setError] = useState("");
@@ -59,6 +69,7 @@ export default function CsvChecker() {
         </label>
         <div className="pw-actions">
           <button
+            className="pw-primary"
             onClick={() => {
               ++readId.current;
               setReading(false);
@@ -107,11 +118,18 @@ export default function CsvChecker() {
               ))}
             </div>
           )}
+          <p className="pw-note pw-row-summary">
+            Rows with issue text: {result.rowClassification.withIssue} · Blank
+            Issue: {result.rowClassification.withoutIssue} · Status only:{" "}
+            {result.rowClassification.statusOnly} · Unclassified:{" "}
+            {result.rowClassification.unclassified}
+          </p>
           <h3>Detected columns</h3>
-          <dl className="pw-columns">
+          <p className="pw-note">Detected field → CSV column</p>
+          <dl className="pw-columns pw-detected">
             {Object.entries(result.detectedColumns).map(([label, value]) => (
               <div key={label}>
-                <dt>{label}</dt>
+                <dt>{fieldLabels[label as keyof typeof fieldLabels]}</dt>
                 <dd>{value || "Not found"}</dd>
               </div>
             ))}
@@ -154,9 +172,26 @@ export default function CsvChecker() {
             </div>
           ) : (
             <p>
-              No issue groups could be derived. Check the warnings and detected
-              columns; this is not an all-clear for the store.
+              No nonempty Issue values were supplied. This is not an all-clear
+              for the store; compare the original export and the row counts
+              above.
             </p>
+          )}
+          {result.statusGroups.length > 0 && (
+            <>
+              <h3>Status groups</h3>
+              <p className="pw-note">
+                Supplied status values are not issue diagnoses.
+              </p>
+              <dl className="pw-columns">
+                {result.statusGroups.map(({ status, count }) => (
+                  <div key={status}>
+                    <dt>{status}</dt>
+                    <dd>{count} row(s)</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
           )}
           {result.topUrls.length > 0 && (
             <>
@@ -171,9 +206,11 @@ export default function CsvChecker() {
             </>
           )}
           <p className="pw-note">
-            Each row is grouped by its supplied issue text. Suggested priority
-            is a wording heuristic; Unrated means no supported rule matched.
-            Verify the issue before taking action.
+            Only nonempty Issue values form issue groups. Blank Issue values
+            remain separate; when Issue is absent, status values are reported
+            without inferring a diagnosis. Suggested priority is a wording
+            heuristic; Unrated means no supported rule matched. Verify the issue
+            before taking action.
           </p>
         </section>
       ) : (

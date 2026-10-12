@@ -68,6 +68,7 @@ Node tests cover the analyzers. Playwright checks sample data, uploads and error
 - JSON-LD: up to 2 million input characters; checks inspect the first Product and a directly nested, typed Offer. Referenced offers, AggregateOffer, custom contexts and variant comparison are not resolved.
 - Canonical checks require an absolute HTTP(S) URL for a pass; relative references need a page URL. Destinations are not fetched. Hreflang, shipping and returns remain warnings because their complete requirements are not validated.
 - Raw CSV field spaces are retained; headers, issue grouping and URL samples are normalized separately.
+- CSV results: CSV issue groups contain only nonempty values from a detected Issue column. Blank Issue cells remain separate. When Issue is absent, supplied status values are shown as status groups, not diagnoses; missing values remain unclassified. The row breakdown accounts for every accepted product row.
 - Suggested priority is a heuristic based on issue text; unrecognised issues are Unrated. Passing markup checks does not establish Google eligibility or confirm live stock or prices.
 - The published site includes hosting-provided Cloudflare Web Analytics; the Privacy page distinguishes this from local checker input processing.
 - Contact is an email link with a copy-address fallback; no form or request-submission backend.
