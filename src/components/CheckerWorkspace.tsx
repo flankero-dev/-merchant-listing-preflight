@@ -77,10 +77,10 @@ export default function CheckerWorkspace() {
         <section
           id="order"
           className="pw-contact"
-          aria-label="Optional manual review"
+          aria-label="Optional developer contact"
         >
           <details ref={contactRef}>
-            <summary>Ask about a product-data issue</summary>
+            <summary>Contact the developer</summary>
             <OrderForm />
           </details>
         </section>

@@ -257,7 +257,7 @@ try {
     await page
       .getByRole("region", { name: "Markup analysis results" })
       .innerText(),
-    /Product found: Whitespace test/,
+    /Name: Whitespace test/,
   );
 
   // Following a guide from a scrolled index must show the new page's heading.
@@ -271,14 +271,14 @@ try {
     .getByRole("heading", { level: 1, name: "Compare product prices" })
     .waitFor();
   await page.waitForFunction(() => window.scrollY === 0);
-  // The header CTA is hidden on mobile; use the visible action in the guide hero.
+  // The guide action opens the optional developer contact draft.
   await page
     .locator(".content-hero")
-    .getByRole("link", { name: "Ask about an issue", exact: true })
+    .getByRole("link", { name: "Contact the developer", exact: true })
     .click();
   await page.locator("#order details[open]").waitFor();
   assert.equal(
-    await page.getByLabel("Store URL", { exact: true }).isVisible(),
+    await page.getByLabel("Store URL (optional)", { exact: true }).isVisible(),
     true,
   );
   await page.reload();
@@ -288,8 +288,21 @@ try {
     .click();
   assert.equal(
     await page
-      .getByLabel("Store URL", { exact: true })
+      .getByLabel("Message", { exact: true })
       .evaluate((el) => el.validity.valueMissing),
+    true,
+  );
+  assert.equal(
+    await page
+      .getByLabel("Store URL (optional)", { exact: true })
+      .getAttribute("required"),
+    null,
+  );
+  await page
+    .getByLabel("Message", { exact: true })
+    .fill("Feedback about the sample CSV.");
+  assert.equal(
+    await page.locator(".order-form").evaluate((form) => form.checkValidity()),
     true,
   );
   assert.match(page.url(), /#order$/);
@@ -317,7 +330,7 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("http://127.0.0.1:4175/sample-report");
   await page
-    .getByRole("link", { name: "Run free preflight", exact: true })
+    .getByRole("link", { name: "Check a CSV export", exact: true })
     .click();
   await page.waitForURL("**/#checker");
   await page
@@ -380,7 +393,7 @@ try {
     await page
       .getByRole("region", { name: "Markup analysis results" })
       .innerText(),
-    /Product found:/,
+    /Product type detected/,
   );
   await page.setViewportSize({ width: 320, height: 700 });
   assert.equal(
@@ -390,26 +403,30 @@ try {
     true,
   );
   await page.goto("http://127.0.0.1:4175/#order");
-  await page.getByLabel("Store URL", { exact: true }).fill("ftp://example.com");
+  await page
+    .getByLabel("Store URL (optional)", { exact: true })
+    .fill("ftp://example.com");
   assert.equal(
     await page
-      .getByLabel("Store URL", { exact: true })
+      .getByLabel("Store URL (optional)", { exact: true })
       .evaluate((el) => el.validity.valid),
     false,
   );
   await page
-    .getByLabel("Store URL", { exact: true })
+    .getByLabel("Store URL (optional)", { exact: true })
     .fill("https://example.com");
   assert.equal(
     await page
-      .getByLabel("Store URL", { exact: true })
+      .getByLabel("Store URL (optional)", { exact: true })
       .evaluate((el) => el.validity.valid),
     true,
   );
-  await page.getByLabel("Target currency", { exact: true }).fill("123");
+  await page
+    .getByLabel("Target currency (optional)", { exact: true })
+    .fill("123");
   assert.equal(
     await page
-      .getByLabel("Target currency", { exact: true })
+      .getByLabel("Target currency (optional)", { exact: true })
       .evaluate((el) => el.validity.valid),
     false,
   );
@@ -478,7 +495,7 @@ try {
     "/guides/pending-website-check-readiness",
     "/guides/product-offer-structured-data-checklist",
   ];
-  for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+  for (const width of [320, 360, 390, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 844 });
     for (const path of reviewPaths) {
       await page.goto(`http://127.0.0.1:4175${path}`);
@@ -621,9 +638,7 @@ try {
     .filter({ hasText: "Copy manually:" })
     .waitFor();
   assert.equal(
-    await page
-      .getByLabel("Issue details", { exact: true })
-      .getAttribute("maxlength"),
+    await page.getByLabel("Message", { exact: true }).getAttribute("maxlength"),
     "2000",
   );
   await page.screenshot({ path: "docs/contact-desktop.png", fullPage: true });
@@ -643,6 +658,41 @@ try {
       fullPage: true,
     });
   }
+  // Worked evidence must agree with the supplied samples and separate unknowns.
+  await page.goto("http://127.0.0.1:4175/sample-report");
+  const reportText = await page.locator("main:visible").innerText();
+  assert.match(reportText, /two of five product rows/);
+  assert.doesNotMatch(reportText, /SKU-1012|25 product/);
+  assert.match(reportText, /Feed price: 79\.99 USD/);
+  assert.match(reportText, /Visible page price: 69\.99 USD/);
+  assert.match(reportText, /JSON-LD Offer price: 79\.99 USD/);
+  assert.match(
+    reportText,
+    /SKU-1004 feed price: 129\.00 USD; page and markup not examined/,
+  );
+  assert.match(reportText, /If 69\.99 USD/);
+  assert.match(reportText, /If 79\.99 USD/);
+  await page.goto(
+    "http://127.0.0.1:4175/guides/pending-website-check-readiness",
+  );
+  assert.match(await page.locator("main:visible").innerText(), /crawl|crawled/);
+  await page.goto("http://127.0.0.1:4175/#checker");
+  await page
+    .getByRole("button", { name: "JSON-LD / HTML", exact: true })
+    .click();
+  await page
+    .getByLabel("Product JSON-LD or HTML")
+    .fill(
+      '<textarea><script type="application/ld+json">{"@type":"Product","offers":{"@type":"Offer","price":1,"priceCurrency":"USD"}}</script></textarea>',
+    );
+  await page
+    .getByRole("button", { name: "Analyze markup", exact: true })
+    .click();
+  const inertResult = page.getByRole("region", {
+    name: "Markup analysis results",
+  });
+  assert.match(await inertResult.innerText(), /0 JSON-LD block/);
+  assert.match(await inertResult.innerText(), /No Product object found/);
   assert.deepEqual(errors, []);
   console.log(
     "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404, shared menus, all six guide links, footer links, route focus and retained analysis; no runtime errors.",

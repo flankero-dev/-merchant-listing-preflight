@@ -3,13 +3,13 @@ import { useMemo, useState } from "react";
 const CONTACT_EMAIL = "flankero4697@gmail.com";
 
 const issueTypes = [
+  "Feedback about the tool",
   "Mismatched product price",
   "Mismatched product availability",
   "Mismatched domains",
   "Different product landing page",
   "Pending website check",
   "Product / Offer structured data",
-  "Account-level review preparation",
   "Other Merchant Center issue",
 ];
 
@@ -24,12 +24,12 @@ function OrderForm() {
 
   const mailtoLink = useMemo(() => {
     const subject = encodeURIComponent(
-      `Merchant Preflight question — ${issueType}`,
+      `Merchant Preflight feedback — ${issueType}`,
     );
 
     const body = encodeURIComponent(`Hi,
 
-I have a question about this product-data issue.
+I have feedback or a question about Merchant Preflight.
 
 Store URL:
 ${storeUrl || "[not provided]"}
@@ -37,7 +37,7 @@ ${storeUrl || "[not provided]"}
 My email:
 ${clientEmail || "[not provided]"}
 
-Issue type:
+Topic:
 ${issueType}
 
 Target country:
@@ -46,13 +46,8 @@ ${targetCountry || "[not provided]"}
 Target currency:
 ${currency || "[not provided]"}
 
-Message / issue details:
+Message:
 ${message || "[not provided]"}
-
-I can provide:
-- affected-products CSV
-- 3–5 affected product URLs
-- screenshot of the Merchant Center issue
 
 Thanks.`);
 
@@ -73,32 +68,35 @@ Thanks.`);
       <div className="section-heading order-heading">
         <div>
           <div className="eyebrow">Optional contact</div>
-          <h2>Ask about a product-data issue</h2>
+          <h2>Contact the developer</h2>
         </div>
 
         <p>
-          Prepare an email with the store URL, issue and relevant context. No
-          message is sent by this website.
+          Share feedback or report a problem with this tool. Extra product
+          context is optional. This opens a draft, not a support request
+          submitted to a service.
         </p>
       </div>
 
       <div className="order-grid">
         <div className="order-copy">
-          <h3>Useful context</h3>
+          <h3>Before you write</h3>
 
           <ul className="step-list">
-            <li>Affected-products CSV from Merchant Center</li>
-            <li>3–5 affected product URLs</li>
-            <li>Screenshot of the issue title</li>
-            <li>Target country and currency</li>
-            <li>Short note about discounts, stock updates or redirects</li>
+            <li>Describe what you expected and what happened.</li>
+            <li>For a reproducible example, use fictional or redacted data.</li>
+            <li>
+              Only add a store URL or product context if it helps explain the
+              question.
+            </li>
           </ul>
 
           <div className="notice-box">
             <strong>Important</strong>
             <p>
               Use redacted examples. Do not send passwords, recovery codes or
-              account access. A local check cannot establish Google approval.
+              account access. This is not Google support or a promised
+              consulting service.
             </p>
           </div>
         </div>
@@ -111,12 +109,11 @@ Thanks.`);
           }}
         >
           <label className="field-label" htmlFor="store-url">
-            Store URL
+            Store URL (optional)
           </label>
           <input
             id="store-url"
             maxLength={2048}
-            required
             type="url"
             pattern="https?://.+"
             value={storeUrl}
@@ -126,12 +123,11 @@ Thanks.`);
           />
 
           <label className="field-label" htmlFor="client-email">
-            Your email
+            Your email (optional)
           </label>
           <input
             id="client-email"
             maxLength={254}
-            required
             type="email"
             value={clientEmail}
             onChange={(event) => setClientEmail(event.target.value)}
@@ -142,13 +138,13 @@ Thanks.`);
           <div className="form-row">
             <div>
               <label className="field-label" htmlFor="issue-type">
-                Issue type
+                Topic
               </label>
               <select
                 id="issue-type"
                 value={issueType}
                 onChange={(event) => setIssueType(event.target.value)}
-                title="Issue type"
+                title="Topic"
               >
                 {issueTypes.map((issue) => (
                   <option value={issue} key={issue}>
@@ -160,7 +156,7 @@ Thanks.`);
 
             <div>
               <label className="field-label" htmlFor="target-country">
-                Target country
+                Target country (optional)
               </label>
               <input
                 maxLength={80}
@@ -175,7 +171,7 @@ Thanks.`);
           </div>
 
           <label className="field-label" htmlFor="currency">
-            Target currency
+            Target currency (optional)
           </label>
           <input
             id="currency"
@@ -189,16 +185,17 @@ Thanks.`);
           />
 
           <label className="field-label" htmlFor="message">
-            Issue details
+            Message
           </label>
           <textarea
+            required
             maxLength={2000}
             id="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             rows={6}
-            placeholder="Paste the Merchant Center issue title or describe what is happening..."
-            title="Issue details"
+            placeholder="Describe your feedback, question or a problem with the tool..."
+            title="Message"
           />
 
           <button className="btn primary full" type="submit">
@@ -226,8 +223,8 @@ Thanks.`);
           </div>
 
           <p className="form-note">
-            This opens your email app with a prepared message. Attach the CSV
-            manually after the email opens.
+            Your email app controls sending. Checker inputs are not included
+            automatically, and a response is not guaranteed.
           </p>
         </form>
       </div>

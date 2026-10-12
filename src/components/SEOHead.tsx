@@ -12,7 +12,7 @@ type SeoData = {
 
 const seoByPath: Record<string, SeoData> = {
   "/": {
-    title: "Merchant Listing Preflight — Google Merchant Center Issue Checker",
+    title: "Merchant Listing Preflight — Product-data Checker",
     description:
       "Inspect product CSV exports and Product / Offer JSON-LD locally. Group recorded issues and review basic markup checks without connecting an account.",
   },
@@ -25,18 +25,18 @@ const seoByPath: Record<string, SeoData> = {
   "/affected-products-csv-checker": {
     title: "Affected Products CSV Checker — Google Merchant Center Preflight",
     description:
-      "Free preflight checklist for Google Merchant Center affected-products CSV exports. Group issues, detect columns and prepare product disapproval diagnosis.",
+      "Input and result guide for the local CSV checker: supported columns, recorded issue groups, warnings and file limits.",
   },
   "/google-merchant-center-review-checklist": {
     title:
       "Google Merchant Center Review Checklist — Merchant Listing Preflight",
     description:
-      "Checklist before requesting another Google Merchant Center review: feed data, landing pages, structured data, policy pages, redirects and product issue readiness.",
+      "A manual checklist for reproducing an issue, verifying a correction and checking the relevant official review requirements.",
   },
   "/merchant-center-diagnostic-report": {
-    title: "Product-data Evidence Worksheet — Merchant Preflight",
+    title: "Product-data Evidence Checklist — Merchant Preflight",
     description:
-      "A manual evidence worksheet for product-data investigations: source values, hypotheses, changes and verification.",
+      "Instructions for collecting product-data evidence in your own notes: source values, hypotheses, changes and verification.",
   },
   "/guides": {
     title: "Merchant Center Issue Guides — Merchant Listing Preflight",

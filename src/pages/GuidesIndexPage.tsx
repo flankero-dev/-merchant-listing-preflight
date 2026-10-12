@@ -17,18 +17,18 @@ function GuidesIndexPage() {
           <h1>Google Merchant Center issue guides</h1>
 
           <p>
-            Practical diagnostic guides for common Merchant Center and merchant
-            listing issues. Each guide explains symptoms, likely causes, quick
-            checks and recommended fix order before requesting another review.
+            Manual investigation guides for selected Merchant Center issues and
+            Product / Offer markup. Compare observations, check possible causes
+            and follow the issue-specific official documentation.
           </p>
 
           <div className="hero-actions">
             <Link className="btn primary" to="/#checker">
-              Run free preflight
+              Open checker
             </Link>
 
             <Link className="btn secondary" to="/#order">
-              Ask about an issue
+              Contact the developer
             </Link>
           </div>
         </section>

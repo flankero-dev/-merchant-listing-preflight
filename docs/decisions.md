@@ -24,7 +24,7 @@ Evidence: [analyzer](../src/lib/csvAnalysis.ts), [CSV tests](../tests/csvAnalysi
 
 The markup checker requires an actual Product type and a directly nested typed Offer. It does not attach an unrelated Offer found elsewhere in a graph. Price must be a finite non-negative decimal; currency and availability must be recognized.
 
-HTML extraction reads attribute tokens in either order and with quoted or unquoted values. It skips comments and does not interpret HTML-like strings in raw JSON as page metadata. The text is parsed without executing scripts.
+HTML extraction reads attribute tokens in either order and with quoted or unquoted values. It skips comments, quoted attributes and inert template/text content, and does not interpret HTML-like strings in raw JSON as page metadata. The text is parsed without executing scripts.
 
 This is a focused extractor, not a complete HTML or JSON-LD processor. `@id` resolution, context expansion, AggregateOffer and multiple variants remain outside the contract. The panel states those limits next to the results.
 
@@ -54,12 +54,12 @@ Evidence: [browser suite](../tests/browser-smoke.mjs).
 
 ## Contact is an email draft
 
-The form validates inputs and constructs a URL-encoded `mailto` draft. There is no request-submission backend or success state implying that a message was sent. The user attaches any files and sends the email in their own email application.
+The form validates inputs and constructs a URL-encoded `mailto` draft. There is no request-submission backend or success state implying that a message was sent. The user chooses what to send and sends the email in their own email application.
 
-An optional contact path can coexist with the utility, but it must not be presented as an automatic diagnostic report generator.
+The optional contact path is for feedback about the tool. It stays collapsed and does not imply a consulting service or automatic diagnostic report.
 
 ## Product content follows the implementation
 
-Reference pages explain input contracts and manual evidence collection. The former report-service URL remains available as a worksheet, without pricing or a report-delivery promise. Privacy describes in-memory analysis and the separate email draft. The draft form has bounded inputs and a persistent, announced clipboard result, including a manual-copy fallback.
+Reference pages explain input contracts and manual evidence collection. The former report-service URL remains available as an evidence checklist, without pricing or a report-delivery promise. Privacy describes in-memory analysis and the separate email draft. The draft form has bounded inputs and a persistent, announced clipboard result, including a manual-copy fallback.
 
 A shared reference-page component keeps headings, cards and links consistent. One skip link targets the active main element; the hidden checker never duplicates that target ID. CSV and markup completion messages use stable live regions.

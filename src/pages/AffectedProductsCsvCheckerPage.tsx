@@ -18,7 +18,7 @@ export default function AffectedProductsCsvCheckerPage() {
           title: "Read the result",
           items: [
             "Product rows counts accepted rows; repeated product URLs still count as separate rows.",
-            "Issue groups counts distinct supplied issue text. The priority is a heuristic, not a new diagnosis.",
+            "Issue groups counts distinct supplied issue text. Suggested priority is a heuristic, not a new diagnosis; unrecognised text is Unrated.",
             "Detected columns shows the matched aliases; sample URLs shows up to five distinct values from the export.",
           ],
         },

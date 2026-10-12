@@ -3,8 +3,8 @@ import ReferencePage from "../components/ReferencePage";
 export default function MerchantCenterDiagnosticReportPage() {
   return (
     <ReferencePage
-      title="Record a product-data investigation"
-      intro="A short evidence worksheet for a manual investigation. The checker does not generate a diagnostic report."
+      title="Product-data evidence checklist"
+      intro="Instructions for collecting evidence in your own notes. This page is a reference checklist, not an editable worksheet or a generated report."
       sections={[
         {
           title: "Define the affected item",
@@ -25,7 +25,7 @@ export default function MerchantCenterDiagnosticReportPage() {
         {
           title: "Verify a change",
           items: [
-            "Change the relevant source, then collect the same evidence again.",
+            "Confirm the authoritative value, correct the inconsistent source, then collect the same evidence again.",
             "Record what changed, when it changed and what remains uncertain.",
             "Use the official guide for the issue before requesting a platform review.",
           ],
