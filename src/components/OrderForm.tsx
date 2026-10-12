@@ -66,8 +66,6 @@ Thanks.`);
     } catch {
       setCopyStatus(`Copy manually: ${CONTACT_EMAIL}`);
     }
-
-
   };
 
   return (
@@ -79,8 +77,8 @@ Thanks.`);
         </div>
 
         <p>
-          Prepare an email with the store URL, issue and relevant context.
-          No message is sent by this website.
+          Prepare an email with the store URL, issue and relevant context. No
+          message is sent by this website.
         </p>
       </div>
 
@@ -208,9 +206,7 @@ Thanks.`);
           </button>
 
           <div className="email-fallback">
-            <p>
-              If your email app does not open, you can use this address:
-            </p>
+            <p>If your email app does not open, you can use this address:</p>
 
             <div className="email-copy-row">
               <code>{CONTACT_EMAIL}</code>
@@ -224,7 +220,9 @@ Thanks.`);
               </button>
             </div>
 
-            <span className="copy-status" role="status">{copyStatus}</span>
+            <span className="copy-status" role="status">
+              {copyStatus}
+            </span>
           </div>
 
           <p className="form-note">
@@ -238,4 +236,3 @@ Thanks.`);
 }
 
 export default OrderForm;
-

@@ -34,8 +34,7 @@ const seoByPath: Record<string, SeoData> = {
       "Checklist before requesting another Google Merchant Center review: feed data, landing pages, structured data, policy pages, redirects and product issue readiness.",
   },
   "/merchant-center-diagnostic-report": {
-    title:
-      "Product-data Evidence Worksheet — Merchant Preflight",
+    title: "Product-data Evidence Worksheet — Merchant Preflight",
     description:
       "A manual evidence worksheet for product-data investigations: source values, hypotheses, changes and verification.",
   },
@@ -171,4 +170,3 @@ function SEOHead() {
 }
 
 export default SEOHead;
-

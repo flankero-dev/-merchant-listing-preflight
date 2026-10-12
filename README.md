@@ -20,14 +20,14 @@ Files and markup are processed locally. The checker groups supplied issue text; 
 
 ## Code worth reviewing
 
-| Decision | Implementation | Evidence |
-|---|---|---|
-| Reject malformed input before classification | [CSV parser and analyzer](src/lib/csvAnalysis.ts) | [Quotes, multiline values, BOM, duplicate headers and row shape](tests/csvAnalysis.test.mjs) |
-| Match real column aliases | [Column detection](src/lib/csvAnalysis.ts) | Exact aliases win; `Grid` is not mistaken for `ID` |
-| Check the supplied Product's own Offer | [Markup analysis](src/lib/schemaAnalysis.ts) | [Typed offers, unrelated graph nodes and invalid values](tests/schemaAnalysis.test.mjs) |
-| Read HTML attributes without executing markup | [Attribute extraction](src/lib/schemaAnalysis.ts) | Quoted/unquoted attributes, comments and HTML-like JSON strings |
-| Keep each input when changing format | [Workspace](src/components/CheckerWorkspace.tsx) | [Format persistence and file re-selection](tests/browser-smoke.mjs) |
-| Handle real navigation and small screens | [Route scrolling](src/components/RouteScroll.tsx), [central metadata](src/components/SEOHead.tsx) | Deep links, anchors, mobile cards and long results in browser smoke |
+| Decision                                      | Implementation                                                                                    | Evidence                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Reject malformed input before classification  | [CSV parser and analyzer](src/lib/csvAnalysis.ts)                                                 | [Quotes, multiline values, BOM, duplicate headers and row shape](tests/csvAnalysis.test.mjs) |
+| Match real column aliases                     | [Column detection](src/lib/csvAnalysis.ts)                                                        | Exact aliases win; `Grid` is not mistaken for `ID`                                           |
+| Check the supplied Product's own Offer        | [Markup analysis](src/lib/schemaAnalysis.ts)                                                      | [Typed offers, unrelated graph nodes and invalid values](tests/schemaAnalysis.test.mjs)      |
+| Read HTML attributes without executing markup | [Attribute extraction](src/lib/schemaAnalysis.ts)                                                 | Quoted/unquoted attributes, comments and HTML-like JSON strings                              |
+| Keep each input when changing format          | [Workspace](src/components/CheckerWorkspace.tsx)                                                  | [Format persistence and file re-selection](tests/browser-smoke.mjs)                          |
+| Handle real navigation and small screens      | [Route scrolling](src/components/RouteScroll.tsx), [central metadata](src/components/SEOHead.tsx) | Deep links, anchors, mobile cards and long results in browser smoke                          |
 
 Guides provide short investigation checklists with links to Google's documentation. The worked report distinguishes illustrative evidence from output produced by the checker.
 
@@ -65,6 +65,8 @@ Node tests cover the analyzers. Playwright checks sample data, uploads and error
 
 - CSV: comma-delimited, up to 2 MB per uploaded file and 10,000 product rows. Semicolon and tab delimiters are not supported.
 - JSON-LD: up to 2 million input characters; checks inspect the first Product and a directly nested, typed Offer. Referenced offers, AggregateOffer, custom contexts and variant comparison are not resolved.
+- Canonical checks require an absolute HTTP(S) URL for a pass; relative references need a page URL. Destinations are not fetched. Hreflang, shipping and returns remain warnings because their complete requirements are not validated.
+- Raw CSV field spaces are retained; headers, issue grouping and URL samples are normalized separately.
 - Priority is a heuristic based on issue text. Passing markup checks does not establish Google eligibility or confirm live stock or prices.
 - The optional contact form opens a draft in the user's email app. It does not send mail or submit data to a backend.
 - Chromium browser workflows are covered. A full assistive-technology and cross-browser audit remains outside the tested scope.

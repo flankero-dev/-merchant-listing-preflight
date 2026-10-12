@@ -2,10 +2,8 @@ import { Link } from "react-router-dom";
 import { guidePages } from "../guideData";
 
 function MerchantCenterIssuesPage() {
-
   return (
     <div className="page">
-
       <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">
@@ -113,11 +111,10 @@ function MerchantCenterIssuesPage() {
           <h2>When to collect more evidence</h2>
 
           <p>
-            Collect more evidence when the same issue affects multiple
-            products, when Merchant Center keeps rejecting products after fixes,
-            or when you are not sure whether the source of the problem is the
-            feed, the landing page, structured data, redirects or account-level
-            readiness.
+            Collect more evidence when the same issue affects multiple products,
+            when Merchant Center keeps rejecting products after fixes, or when
+            you are not sure whether the source of the problem is the feed, the
+            landing page, structured data, redirects or account-level readiness.
           </p>
 
           <p>
@@ -135,8 +132,8 @@ function MerchantCenterIssuesPage() {
             <h2>Record the evidence before making changes.</h2>
 
             <p>
-              Keep observed values separate from likely causes. Use the worksheet
-              to track which source changed and how you verified it.
+              Keep observed values separate from likely causes. Use the
+              worksheet to track which source changed and how you verified it.
             </p>
           </div>
 

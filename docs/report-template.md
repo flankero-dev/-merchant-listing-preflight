@@ -12,12 +12,12 @@ A blank worksheet for a manual investigation. Fill it with evidence from the sup
 
 ## Compare the same product
 
-| Evidence | Supplied feed | Visible product page | Product / Offer markup |
-|---|---|---|---|
-| Product ID / variant | | | |
-| Price and currency | | | |
-| Availability | | | |
-| Product URL / final URL | | | |
+| Evidence                | Supplied feed | Visible product page | Product / Offer markup |
+| ----------------------- | ------------- | -------------------- | ---------------------- |
+| Product ID / variant    |               |                      |                        |
+| Price and currency      |               |                      |                        |
+| Availability            |               |                      |                        |
+| Product URL / final URL |               |                      |                        |
 
 Record the source file, URL and observation time for each value. Mark anything not examined as unknown.
 

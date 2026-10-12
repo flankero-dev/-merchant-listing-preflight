@@ -39,7 +39,11 @@ export default function CsvChecker() {
   return (
     <>
       <p className="pw-sr-only" role="status">
-        {reading ? "Reading file…" : result ? `${result.rowsCount} product rows analyzed in ${result.issueGroups.length} issue groups.` : ""}
+        {reading
+          ? "Reading file…"
+          : result
+            ? `${result.rowsCount} product rows analyzed in ${result.issueGroups.length} issue groups.`
+            : ""}
       </p>
       <div className="pw-input-panel">
         <div>
@@ -114,7 +118,12 @@ export default function CsvChecker() {
           </dl>
           <h3>Issue groups</h3>
           {result.issueGroups.length ? (
-            <div className="pw-table-wrap" role="region" aria-label="Issue groups table" tabIndex={0}>
+            <div
+              className="pw-table-wrap"
+              role="region"
+              aria-label="Issue groups table"
+              tabIndex={0}
+            >
               <table>
                 <caption className="pw-sr-only">
                   Issues recorded in the supplied export

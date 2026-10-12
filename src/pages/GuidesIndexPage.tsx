@@ -2,10 +2,8 @@ import { Link } from "react-router-dom";
 import { guidePages } from "../guideData";
 
 function GuidesIndexPage() {
-
   return (
     <div className="page">
-
       <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <div className="breadcrumbs">

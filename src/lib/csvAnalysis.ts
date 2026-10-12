@@ -35,36 +35,51 @@ function normalizeText(value: string): string {
 }
 
 function parseCsv(text: string): string[][] {
-  if (text.length > 2_000_000) throw new Error("CSV is limited to 2 million characters.");
+  if (text.length > 2_000_000)
+    throw new Error("CSV is limited to 2 million characters.");
   const rows: string[][] = [];
   let row: string[] = [];
   let value = "";
   let state: "plain" | "quoted" | "closed" = "plain";
-  const normalized = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const endField = () => { row.push(value.trim()); value = ""; state = "plain"; };
+  const normalized = text
+    .replace(/^\uFEFF/, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+  const endField = () => {
+    row.push(value);
+    value = "";
+    state = "plain";
+  };
   const endRow = () => {
     endField();
     if (row.some((cell) => cell.length > 0)) rows.push(row);
-    if (rows.length > 10_001) throw new Error("CSV is limited to 10,000 product rows.");
+    if (rows.length > 10_001)
+      throw new Error("CSV is limited to 10,000 product rows.");
     row = [];
   };
   for (let i = 0; i < normalized.length; i += 1) {
     const char = normalized[i];
     if (state === "quoted") {
       if (char === '"') {
-        if (normalized[i + 1] === '"') { value += '"'; i += 1; }
-        else state = "closed";
+        if (normalized[i + 1] === '"') {
+          value += '"';
+          i += 1;
+        } else state = "closed";
       } else value += char;
     } else if (char === ",") endField();
     else if (char === "\n") endRow();
     else if (state === "closed") {
-      if (!/\s/.test(char)) throw new Error("CSV contains unexpected text after a quoted field.");
+      if (!/\s/.test(char))
+        throw new Error("CSV contains unexpected text after a quoted field.");
     } else if (char === '"') {
-      if (value.trim()) throw new Error("CSV contains a quote inside an unquoted field.");
-      value = ""; state = "quoted";
+      if (value.trim())
+        throw new Error("CSV contains a quote inside an unquoted field.");
+      value = "";
+      state = "quoted";
     } else value += char;
   }
-  if (state === "quoted") throw new Error("CSV contains an unclosed quoted field.");
+  if (state === "quoted")
+    throw new Error("CSV contains an unclosed quoted field.");
   if (value.length || row.length || state === "closed") endRow();
   return rows;
 }
@@ -91,7 +106,10 @@ function rowsToObjects(matrix: string[][]): {
   return { headers, rows };
 }
 
-function findColumn(headers: string[], candidates: string[]): string | undefined {
+function findColumn(
+  headers: string[],
+  candidates: string[],
+): string | undefined {
   const normalizedCandidates = candidates.map(normalizeText);
   // Prefer exact aliases before trying whole phrases in longer labels.
   for (const candidate of normalizedCandidates) {
@@ -142,26 +160,46 @@ export function analyzeCsvText(
     matrix = parseCsv(text);
   } catch (error) {
     return {
-      fileName, rowsCount: 0, headers: [], detectedColumns: {},
-      issueGroups: [], topUrls: [],
-      warnings: [error instanceof Error ? error.message : "CSV could not be parsed."],
+      fileName,
+      rowsCount: 0,
+      headers: [],
+      detectedColumns: {},
+      issueGroups: [],
+      topUrls: [],
+      warnings: [
+        error instanceof Error ? error.message : "CSV could not be parsed.",
+      ],
     };
   }
 
   const rawHeaders = matrix[0] ?? [];
   const normalizedHeaders = rawHeaders.map(normalizeText);
-  const generatedHeaders = rawHeaders.map((header, index) => header.trim() || `column_${index + 1}`);
-  const duplicate = normalizedHeaders.some((header, index) =>
-    header.length > 0 && normalizedHeaders.indexOf(header) !== index,
-  ) || new Set(generatedHeaders.map(normalizeText)).size !== generatedHeaders.length;
-  const invalidRow = matrix.slice(1).findIndex((row) => row.length !== rawHeaders.length);
+  const generatedHeaders = rawHeaders.map(
+    (header, index) => header.trim() || `column_${index + 1}`,
+  );
+  const duplicate =
+    normalizedHeaders.some(
+      (header, index) =>
+        header.length > 0 && normalizedHeaders.indexOf(header) !== index,
+    ) ||
+    new Set(generatedHeaders.map(normalizeText)).size !==
+      generatedHeaders.length;
+  const invalidRow = matrix
+    .slice(1)
+    .findIndex((row) => row.length !== rawHeaders.length);
   if (duplicate || invalidRow !== -1) {
     return {
-      fileName, rowsCount: 0, headers: rawHeaders, detectedColumns: {},
-      issueGroups: [], topUrls: [],
-      warnings: [duplicate
-        ? "CSV contains duplicate column names. Rename the repeated headers before analyzing."
-        : `CSV product row ${invalidRow + 1} has a different number of cells than the header. Check delimiters and quotes.`],
+      fileName,
+      rowsCount: 0,
+      headers: rawHeaders,
+      detectedColumns: {},
+      issueGroups: [],
+      topUrls: [],
+      warnings: [
+        duplicate
+          ? "CSV contains duplicate column names. Rename the repeated headers before analyzing."
+          : `CSV product row ${invalidRow + 1} has a different number of cells than the header. Check delimiters and quotes.`,
+      ],
     };
   }
 
@@ -216,7 +254,8 @@ export function analyzeCsvText(
 
   rows.forEach((row) => {
     const issue = issueSource ? row[issueSource]?.trim() : "";
-    const key = issue || (issueSource ? "No issue provided" : "No issue column detected");
+    const key =
+      issue || (issueSource ? "No issue provided" : "No issue column detected");
     const current = grouped.get(key) ?? [];
     current.push(row);
     grouped.set(key, current);
@@ -272,10 +311,13 @@ export function analyzeCsvText(
   }
 
   const topUrls = detectedColumns.link
-    ? Array.from(new Set(rows
-        .map((row) => row[detectedColumns.link as string])
-        .filter(Boolean)))
-        .slice(0, 5)
+    ? Array.from(
+        new Set(
+          rows
+            .map((row) => row[detectedColumns.link as string]?.trim())
+            .filter(Boolean),
+        ),
+      ).slice(0, 5)
     : [];
 
   return {
@@ -288,4 +330,3 @@ export function analyzeCsvText(
     topUrls,
   };
 }
-

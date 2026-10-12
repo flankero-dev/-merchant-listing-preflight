@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 function NotFoundPage() {
   return (
     <div className="page">
-
       <main className="content-page" id="content" tabIndex={-1}>
         <section className="content-hero">
           <p className="eyebrow">404</p>
@@ -60,7 +59,8 @@ function NotFoundPage() {
               <span>Evidence worksheet</span>
               <h2>Evidence worksheet</h2>
               <p>
-                Record source values, hypotheses and the steps used to verify a change.
+                Record source values, hypotheses and the steps used to verify a
+                change.
               </p>
               <strong>Open page →</strong>
             </Link>
