@@ -153,7 +153,7 @@ function optionalPolicy(label: string, value: unknown): RuleResult {
     status: "warn",
     detail: present
       ? `${label} object detected. Its fields and eligibility have not been validated.`
-      : `${label} is missing, empty or not an object. Review the applicable requirements.`,
+      : `${label}: missing, empty or not an object. Review the applicable requirements.`,
   };
 }
 
