@@ -35,10 +35,10 @@ export default function CheckerWorkspace() {
       <main>
         <div className="pw-intro">
           <p className="pw-kicker">PRODUCT DATA UTILITIES</p>
-          <h1>Inspect product data before investigating the store.</h1>
+          <h1>Find recurring issues in a product export.</h1>
           <p>
-            Group issues from a CSV export or check Product / Offer markup. No
-            account connection, crawling or automatic repair.
+            Group reported problems from a CSV export, or inspect price,
+            currency and availability in Product / Offer JSON-LD.
           </p>
           <span className="pw-local">Processed locally in your browser</span>
         </div>

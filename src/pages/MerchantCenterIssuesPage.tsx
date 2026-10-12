@@ -1,25 +1,7 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { guidePages } from "../guideData";
 
 function MerchantCenterIssuesPage() {
-  useEffect(() => {
-    document.title =
-      "Google Merchant Center Issues Checklist — Merchant Listing Preflight";
-
-    let meta = document.querySelector('meta[name="description"]');
-
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      "content",
-      "Checklist for common Google Merchant Center issues including mismatched product price, availability, domains, landing pages, pending website check and Product / Offer structured data.",
-    );
-  }, []);
 
   return (
     <div className="page">
@@ -188,7 +170,7 @@ function MerchantCenterIssuesPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

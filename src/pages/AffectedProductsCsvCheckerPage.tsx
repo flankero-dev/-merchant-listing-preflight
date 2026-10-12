@@ -1,24 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function AffectedProductsCsvCheckerPage() {
-  useEffect(() => {
-    document.title =
-      "Affected Products CSV Checker — Google Merchant Center Preflight";
-
-    let meta = document.querySelector('meta[name="description"]');
-
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      "content",
-      "Free preflight checklist for Google Merchant Center affected-products CSV exports. Group issues, detect columns and prepare product disapproval diagnosis.",
-    );
-  }, []);
 
   return (
     <div className="page">
@@ -249,7 +231,7 @@ function AffectedProductsCsvCheckerPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

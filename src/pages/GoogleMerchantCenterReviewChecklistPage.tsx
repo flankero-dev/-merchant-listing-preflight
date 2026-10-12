@@ -1,24 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function GoogleMerchantCenterReviewChecklistPage() {
-  useEffect(() => {
-    document.title =
-      "Google Merchant Center Review Checklist — Merchant Listing Preflight";
-
-    let meta = document.querySelector('meta[name="description"]');
-
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      "content",
-      "Checklist before requesting another Google Merchant Center review: feed data, landing pages, structured data, policy pages, redirects and product issue readiness.",
-    );
-  }, []);
 
   return (
     <div className="page">
@@ -274,7 +256,7 @@ function GoogleMerchantCenterReviewChecklistPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

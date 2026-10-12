@@ -159,8 +159,8 @@ export default function CsvChecker() {
             </>
           )}
           <p className="pw-note">
-            Priorities are heuristics. Rows may appear in more than one group.
-            Verify the original issue and source data before taking action.
+            Each row is grouped by its supplied issue text. Priority is a
+            heuristic; compare the original export before taking action.
           </p>
         </section>
       ) : (

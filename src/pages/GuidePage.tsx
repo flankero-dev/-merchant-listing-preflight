@@ -1,36 +1,9 @@
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getGuideBySlug, guidePages } from "../guideData";
-
-function setPageMeta(title: string, description: string) {
-  document.title = title;
-
-  let meta = document.querySelector('meta[name="description"]');
-
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.setAttribute("name", "description");
-    document.head.appendChild(meta);
-  }
-
-  meta.setAttribute("content", description);
-}
 
 function GuidePage() {
   const { slug } = useParams();
   const guide = getGuideBySlug(slug);
-
-  useEffect(() => {
-    if (!guide) {
-      setPageMeta(
-        "Guide not found — Merchant Listing Preflight",
-        "Merchant Listing Preflight guide not found.",
-      );
-      return;
-    }
-
-    setPageMeta(guide.metaTitle, guide.metaDescription);
-  }, [guide]);
 
   if (!guide) {
     return (
@@ -53,7 +26,7 @@ function GuidePage() {
           <section className="content-hero">
             <p className="eyebrow">404</p>
             <h1>Guide not found</h1>
-            <p>This guide does not exist yet.</p>
+            <p>This guide is unavailable. Choose a topic from the guide index.</p>
 
             <Link className="btn primary" to="/">
               Back to homepage
@@ -65,7 +38,7 @@ function GuidePage() {
           <span>Merchant Listing Preflight</span>
 
           <span className="footer-links">
-            <span>Diagnostic service. No Google approval guarantee.</span>
+            <span>Independent product-data utility.</span>
             <Link to="/terms">Terms</Link>
             <Link to="/privacy">Privacy</Link>
           </span>
@@ -170,38 +143,22 @@ function GuidePage() {
           </article>
         </section>
 
-        {guide.seoSections && (
-          <section className="article-longform">
-            {guide.seoSections.map((section) => (
-              <article className="longform-section" key={section.title}>
-                <h2>{section.title}</h2>
-
-                {section.paragraphs.map((paragraph, index) => (
-                  <p key={`${section.title}-${index}`}>{paragraph}</p>
-                ))}
-
-                {section.bullets && (
-                  <ul className="step-list">
-                    {section.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                )}
-              </article>
-            ))}
-          </section>
-        )}
+        <section className="article-card guide-reference" aria-labelledby="reference-heading">
+          <h2 id="reference-heading">Official reference</h2>
+          <p>Use this checklist to collect evidence. Check Google's current requirements before changing product data or requesting a review.</p>
+          <a href={guide.reference.href}>{guide.reference.title} ↗</a>
+        </section>
 
         <section className="article-cta">
           <div>
             <p className="eyebrow">Need a report?</p>
 
-            <h2>Get a clear diagnosis before requesting another review.</h2>
+            <h2>Compare the source values.</h2>
 
             <p>
-              Upload your affected-products CSV and 3–5 affected product URLs.
-              The paid report gives root cause, priority fixes, evidence notes
-              and review preparation.
+              Use the export to identify affected products, then compare the feed,
+              page and markup for the same product and variant. Keep the evidence
+              together before deciding what to change.
             </p>
           </div>
 
@@ -235,7 +192,7 @@ function GuidePage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

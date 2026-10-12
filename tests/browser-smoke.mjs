@@ -252,6 +252,35 @@ try {
       return rect.left >= 0 && rect.right <= innerWidth && card.scrollWidth <= card.clientWidth + 1;
     })), true, `${path}: card contents must fit the mobile viewport`);
   }
+  await page.goto("http://127.0.0.1:4175/sample-report");
+  assert.match(await page.locator(".content-hero").innerText(), /fictional/i);
+  for (const path of ["/", "/sample-report", "/guides/how-to-fix-mismatched-product-price", "/guides/unknown-guide"]) {
+    await page.goto(`http://127.0.0.1:4175${path}`);
+    await page.waitForFunction(() => document.title === document.querySelector('meta[property="og:title"]')?.content);
+    assert.equal(await page.locator('meta[name="description"]').count(), 1);
+    assert.equal(await page.locator('link[rel="canonical"]').count(), 1);
+  }
+  await page.goto("http://127.0.0.1:4175/guides/how-to-fix-mismatched-product-price");
+  assert.equal(await page.getByRole("heading", { name: "Official reference", exact: true }).count(), 1);
+  assert.equal(await page.locator(".guide-reference a").getAttribute("href"), "https://support.google.com/merchants/answer/12159029?hl=en");
+  const reviewPaths = ["/", "/guides", "/sample-report", "/merchant-center-issues", "/privacy", "/terms",
+    "/affected-products-csv-checker", "/google-merchant-center-review-checklist", "/merchant-center-diagnostic-report", "/missing-page",
+    "/guides/how-to-fix-mismatched-product-price", "/guides/how-to-fix-mismatched-product-availability",
+    "/guides/how-to-fix-mismatched-domains", "/guides/different-product-landing-page-checklist",
+    "/guides/pending-website-check-readiness", "/guides/product-offer-structured-data-checklist"];
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const path of reviewPaths) {
+      await page.goto(`http://127.0.0.1:4175${path}`);
+      await page.locator("h1").waitFor();
+      assert.equal(await page.locator("h1").count(), 1);
+      assert.equal(await page.locator("main *").evaluateAll(elements => elements.every(element => {
+        if (!element.getClientRects().length || element.closest(".pw-sr-only,.pw-skip")) return true;
+        const rect = element.getBoundingClientRect();
+        return rect.left >= -1 && rect.right <= innerWidth + 1;
+      })), true, `${path} at ${width}: visible content stays within viewport`);
+    }
+  }
   assert.deepEqual(errors, []);
   console.log(
     "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404; no runtime errors.",

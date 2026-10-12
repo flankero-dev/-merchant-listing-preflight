@@ -1,0 +1,55 @@
+# Engineering decisions
+
+## Two utilities share a workspace, not a data model
+
+CSV analysis and JSON-LD analysis solve different questions. CSV answers which issue text occurs in the supplied rows. Markup analysis checks the values in a supplied Product and Offer. Neither result establishes what is currently on a live store.
+
+The workspace keeps both panels mounted and switches visibility. This preserves the current input and result when changing format, without a second copy of the state in a global store.
+
+Implementation: [workspace](../src/components/CheckerWorkspace.tsx), [CSV panel](../src/components/CsvChecker.tsx), [markup panel](../src/components/SchemaChecker.tsx).
+
+## A deliberately bounded CSV parser
+
+The parser handles comma-separated fields with explicit plain, quoted and closed states. Escaped quotes and embedded newlines are part of the quoted state. Unexpected text after a quote, unclosed quotes and a row that differs from the header are errors rather than partially accepted output.
+
+This project handles one export format with limits: 2 MB per uploaded file and 10,000 product rows. Supporting more delimiters and encodings would justify a broader parser contract or a maintained CSV library.
+
+Column detection tries exact aliases before longer whole-phrase matches. This prevents a short alias such as ID from matching unrelated words. Headers are checked for duplicates before converting rows into objects.
+
+Evidence: [analyzer](../src/lib/csvAnalysis.ts), [CSV tests](../tests/csvAnalysis.test.mjs).
+
+## Data validation is narrower than semantic eligibility
+
+The markup checker requires an actual Product type and a directly nested typed Offer. It does not attach an unrelated Offer found elsewhere in a graph. Price must be a finite non-negative decimal; currency and availability must be recognized.
+
+HTML extraction reads attribute tokens in either order and with quoted or unquoted values. It skips comments and does not interpret HTML-like strings in raw JSON as page metadata. The text is parsed without executing scripts.
+
+This is a focused extractor, not a complete HTML or JSON-LD processor. `@id` resolution, context expansion, AggregateOffer and multiple variants remain outside the contract. The panel states those limits next to the results.
+
+Evidence: [analyzer](../src/lib/schemaAnalysis.ts), [schema tests](../tests/schemaAnalysis.test.mjs).
+
+## File reads can finish out of order
+
+The CSV panel increments a read identifier when a file is chosen or the sample is loaded. An older file read only updates the result if its identifier is still current. Selecting the same file again is supported by clearing the file input after the read.
+
+This keeps an old asynchronous operation from replacing the user's newer selection. The browser suite checks file re-selection and switching formats.
+
+## Routes have one metadata owner
+
+React Router keeps the existing guide and report URLs available. `SEOHead` is the single owner of document title, description, canonical and social metadata. Pages render content instead of repeating metadata effects.
+
+Route scrolling handles new pages and explicit anchors. The contact section expands for `#order`. Guide references point to Google's documentation; a worked report is explicitly identified as fictional.
+
+## Mobile clipping needs a containment check
+
+Checking the page's scroll width was insufficient when a parent hid overflowing content. Privacy and Terms cards could be clipped at 320 px without creating a horizontal scrollbar.
+
+The single-column grid now uses `minmax(0, 1fr)`, cards can shrink and long words wrap. Browser regression checks card bounds and content width, as well as the overall viewport.
+
+Evidence: [browser suite](../tests/browser-smoke.mjs).
+
+## Contact is an email draft
+
+The form validates inputs and constructs a URL-encoded `mailto` draft. There is no request-submission backend or success state implying that a message was sent. The user attaches any files and sends the email in their own email application.
+
+An optional contact path can coexist with the utility, but it must not be presented as an automatic diagnostic report generator.
