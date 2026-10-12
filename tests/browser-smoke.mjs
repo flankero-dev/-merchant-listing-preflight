@@ -109,6 +109,33 @@ try {
   await page
     .getByRole("button", { name: "Analyze markup", exact: true })
     .click();
+  const analyzeButton = page.getByRole("button", {
+    name: "Analyze markup",
+    exact: true,
+  });
+  await analyzeButton.hover();
+  const contrast = await analyzeButton.evaluate((button) => {
+    const style = getComputedStyle(button);
+    const luminance = (color) => {
+      const rgb = color
+        .match(/\d+/g)
+        .slice(0, 3)
+        .map(Number)
+        .map((v) => {
+          const channel = v / 255;
+          return channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4;
+        });
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    };
+    const text = luminance(style.color),
+      background = luminance(style.backgroundColor);
+    return (
+      (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05)
+    );
+  });
+  assert.ok(contrast >= 4.5, `Analyze markup hover contrast: ${contrast}`);
   const markup = page.getByRole("region", { name: "Markup analysis results" });
   await markup.waitFor();
   assert.equal(await markup.locator(".pw-status.pass").count(), 5);

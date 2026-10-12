@@ -119,6 +119,10 @@
   color: #10211c;
   border-color: #b6d8ca;
 }
+.preflight-workspace .pw-primary:hover {
+  background: #d3ecdf;
+  color: #10211c;
+}
 .pw-input-panel,
 .pw-results {
   padding: 24px;
