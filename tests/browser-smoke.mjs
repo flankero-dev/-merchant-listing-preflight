@@ -271,46 +271,13 @@ try {
     .getByRole("heading", { level: 1, name: "Compare product prices" })
     .waitFor();
   await page.waitForFunction(() => window.scrollY === 0);
-  // The guide action opens the optional developer contact draft.
-  await page
-    .locator(".content-hero")
-    .getByRole("link", { name: "Contact the developer", exact: true })
-    .click();
-  await page.locator("#order details[open]").waitFor();
+  // The old contact anchor remains useful, without a form or fake submission.
+  await page.goto("http://127.0.0.1:4175/#order");
   assert.equal(
-    await page.getByLabel("Store URL (optional)", { exact: true }).isVisible(),
-    true,
+    await page.locator("#order a").getAttribute("href"),
+    "mailto:flankero4697@gmail.com",
   );
-  await page.reload();
-  await page.locator("#order details[open]").waitFor();
-  await page
-    .getByRole("button", { name: "Open email draft", exact: true })
-    .click();
-  assert.equal(
-    await page
-      .getByLabel("Message", { exact: true })
-      .evaluate((el) => el.validity.valueMissing),
-    true,
-  );
-  assert.equal(
-    await page
-      .getByLabel("Store URL (optional)", { exact: true })
-      .getAttribute("required"),
-    null,
-  );
-  await page
-    .getByLabel("Message", { exact: true })
-    .fill("Feedback about the sample CSV.");
-  assert.equal(
-    await page.locator(".order-form").evaluate((form) => form.checkValidity()),
-    true,
-  );
-  assert.match(page.url(), /#order$/);
-  await page.goto("http://127.0.0.1:4175/");
-  assert.equal(
-    await page.locator("#order details").evaluate((el) => el.open),
-    false,
-  );
+  assert.equal(await page.locator("#order input,#order textarea").count(), 0);
 
   // The shared menu returns from the sample report to the checker.
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -323,10 +290,6 @@ try {
   await page
     .getByRole("region", { name: "Product data checker" })
     .waitFor({ state: "visible" });
-  assert.equal(
-    await page.locator("#order details").evaluate((el) => el.open),
-    false,
-  );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("http://127.0.0.1:4175/sample-report");
   await page.getByRole("link", { name: "Open checker", exact: true }).click();
@@ -334,10 +297,6 @@ try {
   await page
     .getByRole("region", { name: "Product data checker" })
     .waitFor({ state: "visible" });
-  assert.equal(
-    await page.locator("#order details").evaluate((el) => el.open),
-    false,
-  );
 
   // Existing deep links remain usable after replacing the homepage.
   for (const path of [
@@ -400,34 +359,6 @@ try {
       .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
     true,
   );
-  await page.goto("http://127.0.0.1:4175/#order");
-  await page
-    .getByLabel("Store URL (optional)", { exact: true })
-    .fill("ftp://example.com");
-  assert.equal(
-    await page
-      .getByLabel("Store URL (optional)", { exact: true })
-      .evaluate((el) => el.validity.valid),
-    false,
-  );
-  await page
-    .getByLabel("Store URL (optional)", { exact: true })
-    .fill("https://example.com");
-  assert.equal(
-    await page
-      .getByLabel("Store URL (optional)", { exact: true })
-      .evaluate((el) => el.validity.valid),
-    true,
-  );
-  await page
-    .getByLabel("Target currency (optional)", { exact: true })
-    .fill("123");
-  assert.equal(
-    await page
-      .getByLabel("Target currency (optional)", { exact: true })
-      .evaluate((el) => el.validity.valid),
-    false,
-  );
   for (const path of ["/privacy", "/terms", "/sample-report"]) {
     await page.goto(`http://127.0.0.1:4175${path}`);
     assert.equal(
@@ -446,7 +377,7 @@ try {
     );
   }
   await page.goto("http://127.0.0.1:4175/sample-report");
-  assert.match(await page.locator(".content-hero").innerText(), /fictional/i);
+  assert.match(await page.locator("main:visible").innerText(), /fictional/i);
   for (const path of [
     "/",
     "/sample-report",
@@ -472,7 +403,9 @@ try {
     1,
   );
   assert.equal(
-    await page.locator(".guide-reference a").getAttribute("href"),
+    await page
+      .locator("section[aria-labelledby=reference-heading] a")
+      .getAttribute("href"),
     "https://support.google.com/merchants/answer/12159029?hl=en",
   );
   const reviewPaths = [
@@ -516,12 +449,7 @@ try {
       assert.equal(await page.getByRole("banner").count(), 1);
       assert.equal(await page.getByRole("contentinfo").count(), 1);
       const menu = page.getByRole("navigation", { name: "Main navigation" });
-      for (const name of [
-        "Checker",
-        "Issue reference",
-        "Guides",
-        "Sample report",
-      ]) {
+      for (const name of ["Checker", "Guides"]) {
         assert.equal(
           await menu.getByRole("link", { name, exact: true }).isVisible(),
           true,
@@ -554,8 +482,6 @@ try {
     await page.setViewportSize({ width, height: 844 });
     for (const [name, path] of [
       ["Guides", "/guides"],
-      ["Sample report", "/sample-report"],
-      ["Issue reference", "/merchant-center-issues"],
       ["Checker", "/"],
     ]) {
       await nav.getByRole("link", { name, exact: true }).click();
@@ -588,7 +514,7 @@ try {
     await page
       .getByRole("heading", {
         level: 1,
-        name: "Google Merchant Center issue guides",
+        name: "Issue guides",
       })
       .waitFor();
     await page.screenshot({ path: `docs/guides-${width}.png`, fullPage: true });
@@ -604,7 +530,7 @@ try {
       await page
         .getByRole("heading", {
           level: 1,
-          name: "Google Merchant Center issue guides",
+          name: "Issue guides",
         })
         .waitFor();
     }
@@ -635,10 +561,6 @@ try {
     .getByRole("status")
     .filter({ hasText: "Copy manually:" })
     .waitFor();
-  assert.equal(
-    await page.getByLabel("Message", { exact: true }).getAttribute("maxlength"),
-    "2000",
-  );
   await page.screenshot({ path: "docs/contact-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of [
@@ -659,17 +581,34 @@ try {
   // Worked evidence must agree with the supplied samples and separate unknowns.
   await page.goto("http://127.0.0.1:4175/sample-report");
   const reportText = await page.locator("main:visible").innerText();
-  assert.match(reportText, /two of five product rows/);
-  assert.doesNotMatch(reportText, /SKU-1012|25 product/);
-  assert.match(reportText, /Feed price: 79\.99 USD/);
-  assert.match(reportText, /Visible page price: 69\.99 USD/);
-  assert.match(reportText, /JSON-LD Offer price: 79\.99 USD/);
-  assert.match(
-    reportText,
-    /SKU-1004 feed price: 129\.00 USD; page and markup not examined/,
-  );
-  assert.match(reportText, /If 69\.99 USD/);
-  assert.match(reportText, /If 79\.99 USD/);
+  assert.doesNotMatch(reportText, /SKU-1004|SKU-1012|Executive summary/);
+  const priceRows = await page
+    .locator(".example-table tbody tr")
+    .allTextContents();
+  assert.equal(priceRows.length, 3);
+  assert.match(priceRows[0], /CSV export.*79\.99 USD/);
+  assert.match(priceRows[1], /fictional.*69\.99 USD/);
+  assert.match(priceRows[2], /JSON-LD Offer.*79\.99 USD/);
+  assert.match(reportText, /do not establish which source is wrong/);
+  assert.equal(await page.locator("main ol li").count(), 3);
+  assert.equal(await page.locator("main .article-card").count(), 0);
+  for (const [from, to] of [
+    ["/merchant-center-issues", "/guides"],
+    [
+      "/google-merchant-center-review-checklist",
+      "/merchant-center-diagnostic-report",
+    ],
+  ]) {
+    await page.goto(`http://127.0.0.1:4175${from}`);
+    await page.waitForURL(`http://127.0.0.1:4175${to}`);
+    await page.waitForFunction(() =>
+      document.activeElement?.matches("main h1"),
+    );
+    assert.equal(
+      await page.locator("link[rel=canonical]").getAttribute("href"),
+      `https://merchant-listing-preflight.pages.dev${to}`,
+    );
+  }
   await page.goto(
     "http://127.0.0.1:4175/guides/pending-website-check-readiness",
   );

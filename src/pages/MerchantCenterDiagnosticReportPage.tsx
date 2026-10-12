@@ -4,7 +4,7 @@ export default function MerchantCenterDiagnosticReportPage() {
   return (
     <ReferencePage
       title="Product-data evidence checklist"
-      intro="Instructions for collecting evidence in your own notes. This page is a reference checklist, not an editable worksheet or a generated report."
+      intro="Keep these details in your own notes when investigating a reported issue."
       sections={[
         {
           title: "Define the affected item",
@@ -27,7 +27,7 @@ export default function MerchantCenterDiagnosticReportPage() {
           items: [
             "Confirm the authoritative value, correct the inconsistent source, then collect the same evidence again.",
             "Record what changed, when it changed and what remains uncertain.",
-            "Use the official guide for the issue before requesting a platform review.",
+            "Check the issue-specific official instructions before requesting a platform review; a local result cannot confirm approval.",
           ],
         },
       ]}

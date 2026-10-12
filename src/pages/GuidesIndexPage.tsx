@@ -12,25 +12,14 @@ function GuidesIndexPage() {
             <span>Guides</span>
           </div>
 
-          <p className="eyebrow">Merchant Center guides</p>
+          <p className="eyebrow">Reference</p>
 
-          <h1>Google Merchant Center issue guides</h1>
+          <h1>Issue guides</h1>
 
           <p>
-            Manual investigation guides for selected Merchant Center issues and
-            Product / Offer markup. Compare observations, check possible causes
-            and follow the issue-specific official documentation.
+            Choose the issue reported in your export. Each guide links to the
+            relevant Google documentation.
           </p>
-
-          <div className="hero-actions">
-            <Link className="btn primary" to="/#checker">
-              Open checker
-            </Link>
-
-            <Link className="btn secondary" to="/#order">
-              Contact the developer
-            </Link>
-          </div>
         </section>
 
         <section className="guides-index-grid">
@@ -40,33 +29,21 @@ function GuidesIndexPage() {
               to={`/guides/${guide.slug}`}
               key={guide.slug}
             >
-              <span>{guide.issueName}</span>
+              <h2>{guide.issueName}</h2>
 
-              <h2>{guide.title}</h2>
+              <p>{guide.title}</p>
 
-              <p>{guide.metaDescription}</p>
-
-              <strong>Read guide →</strong>
+              <span>Read guide →</span>
             </Link>
           ))}
         </section>
 
-        <section className="article-cta">
-          <div>
-            <p className="eyebrow">Keep your evidence together</p>
-
-            <h2>Record what you observed.</h2>
-
-            <p>
-              Use the worked example to record source values, hypotheses and
-              verification steps for the same product and variant.
-            </p>
-          </div>
-
-          <Link className="btn primary" to="/sample-report">
-            View worked example
+        <p className="reference-links">
+          <Link to="/sample-report">View a price example</Link> ·{" "}
+          <Link to="/merchant-center-diagnostic-report">
+            Evidence checklist
           </Link>
-        </section>
+        </p>
       </main>
     </div>
   );

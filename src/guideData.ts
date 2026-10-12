@@ -5,7 +5,6 @@ export type GuidePageData = {
   metaDescription: string;
   issueName: string;
   intro: string;
-  symptoms: string[];
   causes: string[];
   quickChecks: string[];
   fixSteps: string[];
@@ -24,10 +23,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Mismatched product price",
     intro:
       "Google found a difference between submitted pricing and the landing page or its markup. Compare the same variant, currency and observation time before deciding which value needs correction.",
-    symptoms: [
-      "A product has a reported price mismatch.",
-      "The submitted active price differs from the page or Offer markup.",
-    ],
     causes: [
       "Website and product-data updates may occur at different times.",
       "Sale dates, time zones or cached markup may expose an older price.",
@@ -59,10 +54,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Mismatched product availability",
     intro:
       "The submitted availability differed from the landing page when Google checked it. A current match does not explain an earlier mismatch; retain the issue timestamp.",
-    symptoms: [
-      "The feed and page disagree about whether the same variant can be purchased.",
-      "Stock text and Offer availability disagree.",
-    ],
     causes: [
       "Inventory and feed updates may be out of sync.",
       "Variant selection or cached pages may expose a different stock state.",
@@ -92,10 +83,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Mismatched domains",
     intro:
       "The submitted product-link domain does not match the store domain registered in Merchant Center, or the store URL has not been registered. Start with those two values.",
-    symptoms: [
-      "Merchant Center reports Mismatched domains for a product link.",
-      "The supplied link uses a different store domain from the registered URL.",
-    ],
     causes: [
       "Product links may still use an old store domain.",
       "The account website may be missing, unverified or unclaimed.",
@@ -125,10 +112,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Different product landing page",
     intro:
       "The submitted link or mobile link does not present the specific advertised product. Check product identity and purchase details rather than assuming a canonical tag is the cause.",
-    symptoms: [
-      "A link opens a different product or a category page.",
-      "Important product details or purchase controls are missing.",
-    ],
     causes: [
       "The submitted URL may be incorrect.",
       "An unavailable product may redirect to a similar item.",
@@ -159,10 +142,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Pending website check",
     intro:
       "Google has not yet crawled one or more product landing pages to verify certain product data. This status alone does not establish a problem with store policies, website ownership or account trust.",
-    symptoms: [
-      "Affected products show Pending website check.",
-      "Their landing-page data is awaiting crawl verification.",
-    ],
     causes: [
       "The relevant product pages have not yet been checked.",
       "Page access or crawl capacity may delay verification; confirm any access problem separately.",
@@ -193,10 +172,6 @@ export const guidePages: GuidePageData[] = [
     issueName: "Product / Offer structured data",
     intro:
       "This checker inspects a limited set of supplied JSON-LD values. Google merchant-listing requirements cover additional properties and policies; passing these local checks is not an eligibility result.",
-    symptoms: [
-      "A supplied Product or nested Offer is missing or incomplete.",
-      "Markup values differ from the visible product.",
-    ],
     causes: [
       "A template or plugin may generate stale or incomplete data.",
       "A valid structure may use features this checker does not resolve.",
