@@ -20,18 +20,6 @@ export default function CheckerWorkspace() {
       <a className="pw-skip" href="#checker">
         Skip to checker
       </a>
-      <header className="pw-header">
-        <a className="pw-brand" href="/">
-          Merchant <strong>Preflight</strong>
-        </a>
-        <nav aria-label="Main navigation">
-          <a href="/merchant-center-issues">Issue reference</a>
-          <a href="/guides">Guides</a>
-          <a href="https://github.com/flankero-dev/-merchant-listing-preflight">
-            Source code ↗
-          </a>
-        </nav>
-      </header>
       <main>
         <div className="pw-intro">
           <p className="pw-kicker">PRODUCT DATA UTILITIES</p>
@@ -100,13 +88,6 @@ export default function CheckerWorkspace() {
           </details>
         </section>
       </main>
-      <footer className="pw-footer">
-        <span>Independent React / TypeScript project</span>
-        <div>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-        </div>
-      </footer>
     </div>
   );
 }

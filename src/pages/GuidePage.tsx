@@ -8,19 +8,6 @@ function GuidePage() {
   if (!guide) {
     return (
       <div className="page">
-        <header className="header">
-          <Link className="logo" to="/">
-            <span className="logo-mark">ML</span>
-            <span>
-              Merchant Listing
-              <strong>Preflight</strong>
-            </span>
-          </Link>
-
-          <Link className="header-cta" to="/">
-            Back home
-          </Link>
-        </header>
 
         <main className="content-page">
           <section className="content-hero">
@@ -28,21 +15,11 @@ function GuidePage() {
             <h1>Guide not found</h1>
             <p>This guide is unavailable. Choose a topic from the guide index.</p>
 
-            <Link className="btn primary" to="/">
-              Back to homepage
+            <Link className="btn primary" to="/guides">
+              Browse guides
             </Link>
           </section>
         </main>
-
-        <footer className="footer">
-          <span>Merchant Listing Preflight</span>
-
-          <span className="footer-links">
-            <span>Independent product-data utility.</span>
-            <Link to="/terms">Terms</Link>
-            <Link to="/privacy">Privacy</Link>
-          </span>
-        </footer>
       </div>
     );
   }
@@ -53,26 +30,6 @@ function GuidePage() {
 
   return (
     <div className="page">
-      <header className="header">
-        <Link className="logo" to="/">
-          <span className="logo-mark">ML</span>
-          <span>
-            Merchant Listing
-            <strong>Preflight</strong>
-          </span>
-        </Link>
-
-        <nav className="nav">
-          <Link to="/">Home</Link>
-          <Link to="/merchant-center-issues">Issues</Link>
-          <Link to="/guides">Guides</Link>
-          <Link to="/sample-report">Sample report</Link>
-        </nav>
-
-        <Link className="header-cta" to="/#order">
-          Request report
-        </Link>
-      </header>
 
       <main className="content-page">
         <section className="content-hero">
@@ -187,16 +144,6 @@ function GuidePage() {
           </div>
         </section>
       </main>
-
-      <footer className="footer">
-        <span>Merchant Listing Preflight</span>
-
-        <span className="footer-links">
-          <span>Independent product-data utility.</span>
-          <Link to="/terms">Terms</Link>
-          <Link to="/privacy">Privacy</Link>
-        </span>
-      </footer>
     </div>
   );
 }

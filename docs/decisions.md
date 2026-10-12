@@ -6,6 +6,8 @@ CSV analysis and JSON-LD analysis solve different questions. CSV answers which i
 
 The workspace keeps both panels mounted and switches visibility. This preserves the current input and result when changing format, without a second copy of the state in a global store.
 
+The workspace also stays mounted while reading reference pages. Internal navigation uses React Router, so returning from a guide restores the format, input and results. Hidden panels leave the accessibility tree. A full reload clears the analysis; uploaded content is never written to browser storage.
+
 Implementation: [workspace](../src/components/CheckerWorkspace.tsx), [CSV panel](../src/components/CsvChecker.tsx), [markup panel](../src/components/SchemaChecker.tsx).
 
 ## A deliberately bounded CSV parser
@@ -39,6 +41,8 @@ This keeps an old asynchronous operation from replacing the user's newer selecti
 React Router keeps the existing guide and report URLs available. `SEOHead` is the single owner of document title, description, canonical and social metadata. Pages render content instead of repeating metadata effects.
 
 Route scrolling handles new pages and explicit anchors. The contact section expands for `#order`. Guide references point to Google's documentation; a worked report is explicitly identified as fictional.
+
+One shared header and footer provide the same navigation on every route, including missing pages. The current section uses `aria-current`, menu links remain visible on small screens, and navigation moves keyboard focus to the new heading or anchor. Reference pages use the checker's colour palette and readable heading sizes.
 
 ## Mobile clipping needs a containment check
 

@@ -2,7 +2,7 @@
   --pw-border: #2d3b40;
   color: #e7eeef;
   background: #10191d;
-  min-height: 100vh;
+  min-height: 0;
   font:
     16px/1.55 system-ui,
     sans-serif;

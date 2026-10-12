@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import CheckerWorkspace from "./components/CheckerWorkspace";
 import GuidePage from "./pages/GuidePage";
 import GuidesIndexPage from "./pages/GuidesIndexPage";
@@ -12,14 +12,23 @@ import MerchantCenterDiagnosticReportPage from "./pages/MerchantCenterDiagnostic
 import SEOHead from "./components/SEOHead";
 import NotFoundPage from "./pages/NotFoundPage";
 import RouteScroll from "./components/RouteScroll";
+import SiteHeader from "./components/SiteHeader";
+import SiteFooter from "./components/SiteFooter";
 
 function App() {
+  const { pathname } = useLocation();
   return (
-    <>
+    <div className="site-shell">
       <SEOHead />
+      <SiteHeader />
+      {/* Keep inputs and results in memory while browsing reference pages.
+          A full reload clears them; uploaded data is never written to storage. */}
+      <div hidden={pathname !== "/"}>
+        <CheckerWorkspace />
+      </div>
       <RouteScroll />
       <Routes>
-        <Route path="/" element={<CheckerWorkspace />} />
+        <Route path="/" element={null} />
         <Route
           path="/merchant-center-issues"
           element={<MerchantCenterIssuesPage />}
@@ -43,7 +52,8 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </>
+      <SiteFooter />
+    </div>
   );
 }
 
