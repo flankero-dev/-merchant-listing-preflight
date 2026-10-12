@@ -1,23 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function PrivacyPage() {
-  useEffect(() => {
-    document.title = "Privacy Policy — Merchant Listing Preflight";
-
-    let meta = document.querySelector('meta[name="description"]');
-
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      "content",
-      "Privacy policy for Merchant Listing Preflight diagnostic report requests.",
-    );
-  }, []);
 
   return (
     <div className="page">
@@ -144,7 +127,7 @@ function PrivacyPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import OrderForm from "./OrderForm";
 import CsvChecker from "./CsvChecker";
 import SchemaChecker from "./SchemaChecker";
@@ -6,6 +7,14 @@ import "./CheckerWorkspace.css";
 
 export default function CheckerWorkspace() {
   const [mode, setMode] = useState<"csv" | "schema">("csv");
+  const contactRef = useRef<HTMLDetailsElement>(null);
+  const { hash } = useLocation();
+  useLayoutEffect(() => {
+    if (hash === "#order" && contactRef.current) {
+      contactRef.current.open = true;
+      contactRef.current.scrollIntoView();
+    }
+  }, [hash]);
   return (
     <div className="preflight-workspace">
       <a className="pw-skip" href="#checker">
@@ -26,10 +35,10 @@ export default function CheckerWorkspace() {
       <main>
         <div className="pw-intro">
           <p className="pw-kicker">PRODUCT DATA UTILITIES</p>
-          <h1>Inspect product data before investigating the store.</h1>
+          <h1>Find recurring issues in a product export.</h1>
           <p>
-            Group issues from a CSV export or check Product / Offer markup. No
-            account connection, crawling or automatic repair.
+            Group reported problems from a CSV export, or inspect price,
+            currency and availability in Product / Offer JSON-LD.
           </p>
           <span className="pw-local">Processed locally in your browser</span>
         </div>
@@ -85,7 +94,7 @@ export default function CheckerWorkspace() {
           className="pw-contact"
           aria-label="Optional manual review"
         >
-          <details>
+          <details ref={contactRef}>
             <summary>Contact about a manual review</summary>
             <OrderForm />
           </details>

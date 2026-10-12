@@ -1,23 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function TermsPage() {
-  useEffect(() => {
-    document.title = "Terms and Disclaimer — Merchant Listing Preflight";
-
-    let meta = document.querySelector('meta[name="description"]');
-
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "description");
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      "content",
-      "Terms and service disclaimer for Merchant Listing Preflight diagnostic reports.",
-    );
-  }, []);
 
   return (
     <div className="page">
@@ -182,7 +165,7 @@ function TermsPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

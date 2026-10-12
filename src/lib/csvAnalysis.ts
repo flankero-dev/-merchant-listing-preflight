@@ -272,9 +272,9 @@ export function analyzeCsvText(
   }
 
   const topUrls = detectedColumns.link
-    ? rows
+    ? Array.from(new Set(rows
         .map((row) => row[detectedColumns.link as string])
-        .filter(Boolean)
+        .filter(Boolean)))
         .slice(0, 5)
     : [];
 

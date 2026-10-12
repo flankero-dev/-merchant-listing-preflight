@@ -11,11 +11,13 @@ import GoogleMerchantCenterReviewChecklistPage from "./pages/GoogleMerchantCente
 import MerchantCenterDiagnosticReportPage from "./pages/MerchantCenterDiagnosticReportPage";
 import SEOHead from "./components/SEOHead";
 import NotFoundPage from "./pages/NotFoundPage";
+import RouteScroll from "./components/RouteScroll";
 
 function App() {
   return (
     <>
       <SEOHead />
+      <RouteScroll />
       <Routes>
         <Route path="/" element={<CheckerWorkspace />} />
         <Route

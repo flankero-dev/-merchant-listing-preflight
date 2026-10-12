@@ -104,7 +104,7 @@ function NotFoundPage() {
         <span>Merchant Listing Preflight</span>
 
         <span className="footer-links">
-          <span>Diagnostic service. No Google approval guarantee.</span>
+          <span>Independent product-data utility.</span>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
         </span>

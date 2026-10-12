@@ -11,6 +11,24 @@ const product = (overrides = {}) => ({
 const analyze = (value) => analyzeSchemaInput(JSON.stringify(value));
 const status = (result, label) => result.checks.find((check) => check.label === label).status;
 
+test("HTML attributes accept whitespace around equals and either attribute order", () => {
+  const result = analyzeSchemaInput(`<link href = 'https://example.com/product' rel = 'canonical'>
+    <link hreflang = 'en' href = 'https://example.com/product' rel = 'alternate'>
+    <script\n type = 'application/ld+json'>${JSON.stringify(product())}</script >`);
+  assert.equal(result.blocks, 1);
+  assert.equal(result.productFound, true);
+  assert.equal(result.offerFound, true);
+  for (const label of ["Price", "Currency", "Availability", "Canonical URL", "Hreflang"])
+    assert.equal(status(result, label), "pass");
+});
+
+test("data-type and noncanonical rel do not masquerade as HTML metadata", () => {
+  const result = analyzeSchemaInput(`<link rel='noncanonical' href='https://example.com'>
+    <script data-type='application/ld+json'>${JSON.stringify(product())}</script>`);
+  assert.equal(result.blocks, 0);
+  assert.equal(status(result, "Canonical URL"), "warn");
+});
+
 test("recognizes typed product offers and valid basic values", () => {
   const result = analyze(product());
   for (const label of ["Product structured data", "Offer object", "Price", "Currency", "Availability"])
@@ -56,4 +74,41 @@ test("handles malformed JSON and retains HTML metadata checks", () => {
   assert.equal(analyzeSchemaInput('{broken').errors.length, 1);
   const result = analyzeSchemaInput(`<script type="application/ld+json">${JSON.stringify(product())}</script><link rel="canonical" href="https://example.com/product" />`);
   assert.equal(status(result, "Canonical URL"), "pass");
+});
+
+test("unquoted and uppercase HTML attributes are recognized", () => {
+  const result = analyzeSchemaInput(`<LINK HREF=https://example.com/product REL=canonical>
+    <link href=https://example.com/en hreflang=en rel=alternate>
+    <script TYPE=application/ld+json>${JSON.stringify(product())}</script>`);
+  assert.equal(result.productFound, true);
+  assert.equal(status(result, "Canonical URL"), "pass");
+  assert.equal(status(result, "Hreflang"), "pass");
+});
+test("metadata must be real attributes on the relevant elements", () => {
+  const result = analyzeSchemaInput(`<div hreflang='en'>Text</div>
+    <link rel=canonical data-href='https://example.com'>
+    <script data-note=' type=application/ld+json'>${JSON.stringify(product())}</script>`);
+  assert.equal(result.blocks, 0);
+  assert.equal(status(result, "Canonical URL"), "warn");
+  assert.equal(status(result, "Hreflang"), "warn");
+});
+test("quoted greater-than signs do not truncate script attributes", () => {
+  const result = analyzeSchemaInput(`<script data-note='a > b' type=application/ld+json>${JSON.stringify(product())}</script>`);
+  assert.equal(result.productFound, true);
+});
+
+test("commented markup is not active product data or metadata", () => {
+  const result = analyzeSchemaInput(`<!-- <script type=application/ld+json>${JSON.stringify(product())}</script><link rel=canonical href=https://example.com> -->`);
+  assert.equal(result.productFound, false);
+  assert.equal(status(result, "Canonical URL"), "warn");
+});
+test("HTML-like text in raw JSON is not treated as an HTML document", () => {
+  const result = analyze({ ...product(), name: '<link rel=canonical href=https://example.com>' });
+  assert.equal(result.productFound, true);
+  assert.equal(status(result, "Canonical URL"), "warn");
+});
+
+test("comment-like text inside JSON-LD strings is preserved", () => {
+  const result = analyzeSchemaInput(`<script type=application/ld+json>${JSON.stringify({ ...product(), name: "A<!--literal-->B" })}</script>`);
+  assert.match(result.checks[0].detail, /A<!--literal-->B/);
 });

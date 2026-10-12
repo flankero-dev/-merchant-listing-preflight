@@ -48,7 +48,7 @@ const seoByPath: Record<string, SeoData> = {
     title:
       "Sample Merchant Center Diagnostic Report — Merchant Listing Preflight",
     description:
-      "View a sample Merchant Listing diagnostic report with issue summary, evidence notes, likely root cause, priority fixes and review preparation.",
+      "A fictional worked example of a product price investigation, with evidence notes and a fix checklist. Product data and findings are illustrative.",
   },
   "/terms": {
     title: "Terms of Service — Merchant Listing Preflight",
@@ -128,9 +128,9 @@ function getSeoData(pathname: string): SeoData {
 
   return (
     seoByPath[pathname] ?? {
-      title: "Merchant Listing Preflight",
+      title: "Page not found — Merchant Listing Preflight",
       description:
-        "Google Merchant Center issue checker and diagnostic report service.",
+        "This page is unavailable. Open the product-data checker or choose a guide from the index.",
     }
   );
 }
