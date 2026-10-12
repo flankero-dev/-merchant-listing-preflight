@@ -139,7 +139,7 @@ function SampleReportPage() {
           </div>
 
           <Link className="btn primary" to="/#checker">
-            Check a CSV export
+            Open checker
           </Link>
         </section>
       </main>

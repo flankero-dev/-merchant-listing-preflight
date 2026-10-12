@@ -329,9 +329,7 @@ try {
   );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("http://127.0.0.1:4175/sample-report");
-  await page
-    .getByRole("link", { name: "Check a CSV export", exact: true })
-    .click();
+  await page.getByRole("link", { name: "Open checker", exact: true }).click();
   await page.waitForURL("**/#checker");
   await page
     .getByRole("region", { name: "Product data checker" })
