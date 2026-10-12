@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         {
           title: "Website hosting",
           paragraphs: [
-            "Cloudflare Pages serves the site and its static assets. Requests for those files are separate from the local analysis; the checker contains no analytics or advertising scripts.",
+            "Cloudflare Pages serves the site and its static assets. The published site also loads Cloudflare Web Analytics for website traffic and performance measurement. This hosting script is separate from the checker code that processes your files and markup locally.",
           ],
         },
         {
