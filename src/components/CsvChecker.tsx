@@ -1,5 +1,9 @@
 import { useRef, useState, type ChangeEvent } from "react";
-import { analyzeCsvText, type CsvAnalysis } from "../lib/csvAnalysis";
+import {
+  analyzeCsvText,
+  type CsvAnalysis,
+  type CsvResult,
+} from "../lib/csvAnalysis";
 import { demoCsv } from "./checkerSamples";
 
 const fieldLabels: Record<keyof CsvAnalysis["detectedColumns"], string> = {
@@ -13,7 +17,7 @@ const fieldLabels: Record<keyof CsvAnalysis["detectedColumns"], string> = {
 };
 
 export default function CsvChecker() {
-  const [result, setResult] = useState<CsvAnalysis | null>(null);
+  const [result, setResult] = useState<CsvResult | null>(null);
   const [error, setError] = useState("");
   const [reading, setReading] = useState(false);
   const readId = useRef(0);
@@ -51,9 +55,11 @@ export default function CsvChecker() {
       <p className="pw-sr-only" role="status">
         {reading
           ? "Reading file…"
-          : result
-            ? `${result.rowsCount} product rows analyzed in ${result.issueGroups.length} issue groups.`
-            : ""}
+          : error || result?.status === "error"
+            ? "CSV analysis was not performed. Correct the file and try again."
+            : result?.status === "success"
+              ? `${result.rowsCount} product rows analyzed in ${result.issueGroups.length} issue groups.`
+              : ""}
       </p>
       <div className="pw-input-panel">
         <div>
@@ -88,7 +94,25 @@ export default function CsvChecker() {
           </p>
         )}
       </div>
-      {result ? (
+      {result?.status === "error" && (
+        <section className="pw-results" aria-label="CSV parsing error">
+          <div className="pw-result-heading">
+            <div>
+              <p className="pw-kicker">CSV COULD NOT BE READ</p>
+              <h2>{result.fileName}</h2>
+            </div>
+            <button onClick={() => setResult(null)}>Clear results</button>
+          </div>
+          <div className="pw-warning" role="alert">
+            <p>{result.error}</p>
+            <p>
+              No analysis results were produced. Choose the corrected CSV file
+              to try again.
+            </p>
+          </div>
+        </section>
+      )}
+      {result?.status === "success" ? (
         <section className="pw-results" aria-label="CSV analysis results">
           <div className="pw-result-heading">
             <div>
@@ -172,9 +196,9 @@ export default function CsvChecker() {
             </div>
           ) : (
             <p>
-              No nonempty Issue values were supplied. This is not an all-clear
-              for the store; compare the original export and the row counts
-              above.
+              {result.rowsCount === 0
+                ? "No product rows were supplied. Choose an export that includes product rows."
+                : "No nonempty Issue values were supplied. This is not an all-clear for the store; compare the original export and the row counts above."}
             </p>
           )}
           {result.statusGroups.length > 0 && (
@@ -213,7 +237,7 @@ export default function CsvChecker() {
             before taking action.
           </p>
         </section>
-      ) : (
+      ) : result?.status === "error" ? null : (
         <div className="pw-empty">
           <h3>Your analysis will appear here</h3>
           <p>

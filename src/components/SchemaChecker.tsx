@@ -6,6 +6,18 @@ export default function SchemaChecker() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<SchemaAnalysis | null>(null);
   const [error, setError] = useState("");
+  const blockSummary = result
+    ? result.blocks === 0
+      ? "No JSON-LD blocks found."
+      : `${result.blocks} JSON-LD block${result.blocks === 1 ? "" : "s"} found. ${result.parsedBlocks} parsed${result.failedBlocks ? `; ${result.failedBlocks} could not be parsed` : ""}.`
+    : "";
+  const coverageMessage = result
+    ? result.coverage === "partial"
+      ? "Partial results: only successfully parsed blocks were checked. Unreadable blocks may contain additional product data."
+      : result.coverage === "unavailable"
+        ? "Product and Offer checks were not performed."
+        : "Markup analysis complete. Review the individual checks."
+    : "";
   function analyze() {
     if (!input.trim()) {
       setError("Paste JSON-LD or an HTML fragment first.");
@@ -30,9 +42,7 @@ export default function SchemaChecker() {
   return (
     <>
       <p className="pw-sr-only" role="status">
-        {result
-          ? "Markup analysis complete. Review the individual checks and any errors."
-          : ""}
+        {result ? `${blockSummary} ${coverageMessage}` : ""}
       </p>
       <div className="pw-input-panel">
         <div>
@@ -90,7 +100,14 @@ export default function SchemaChecker() {
       {result && (
         <section className="pw-results" aria-label="Markup analysis results">
           <h2>Markup analysis</h2>
-          <p>{result.blocks} JSON-LD block(s) inspected</p>
+          <p>{blockSummary}</p>
+          {result.coverage !== "complete" && <p>{coverageMessage}</p>}
+          {result.coverage === "partial" && !result.productChecksPerformed && (
+            <p>
+              No Product was found in the parsed blocks. Product and Offer
+              checks were not performed because other blocks could not be read.
+            </p>
+          )}
           {result.errors.length > 0 && (
             <div role="alert" className="pw-warning">
               {result.errors.map((message) => (
@@ -98,24 +115,29 @@ export default function SchemaChecker() {
               ))}
             </div>
           )}
-          <ul className="pw-checks">
-            {result.checks.map((check) => (
-              <li key={check.label}>
-                <div>
-                  <h3>{check.label}</h3>
-                  <p>{check.detail}</p>
-                </div>
-                <span className={`pw-status ${check.status}`}>
-                  {check.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="pw-note">
-            Checks cover the first Product and its directly nested Offer.
-            Referenced offers, AggregateOffer and custom JSON-LD contexts are
-            not resolved. Passing checks does not establish Google eligibility.
-          </p>
+          {result.checks.length > 0 && (
+            <ul className="pw-checks">
+              {result.checks.map((check) => (
+                <li key={check.label}>
+                  <div>
+                    <h3>{check.label}</h3>
+                    <p>{check.detail}</p>
+                  </div>
+                  <span className={`pw-status ${check.status}`}>
+                    {check.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {result.productChecksPerformed && (
+            <p className="pw-note">
+              Checks cover the first Product found in successfully parsed blocks
+              and its directly nested Offer. Referenced offers, AggregateOffer
+              and custom JSON-LD contexts are not resolved. Passing checks does
+              not establish Google eligibility.
+            </p>
+          )}
         </section>
       )}
     </>

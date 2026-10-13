@@ -3,6 +3,7 @@ type CsvRow = Record<string, string>;
 type Priority = "High" | "Medium" | "Unrated";
 
 export type CsvAnalysis = {
+  status: "success";
   fileName: string;
   rowsCount: number;
   headers: string[];
@@ -31,6 +32,14 @@ export type CsvAnalysis = {
   warnings: string[];
   topUrls: string[];
 };
+
+export type CsvFailure = {
+  status: "error";
+  fileName: string;
+  error: string;
+};
+
+export type CsvResult = CsvAnalysis | CsvFailure;
 
 function normalizeText(value: string): string {
   return value
@@ -161,28 +170,16 @@ function getPriority(issue: string): Priority {
 export function analyzeCsvText(
   text: string,
   fileName = "demo-merchant-center-export.csv",
-): CsvAnalysis {
+): CsvResult {
   let matrix: string[][];
   try {
     matrix = parseCsv(text);
   } catch (error) {
     return {
+      status: "error",
       fileName,
-      rowsCount: 0,
-      headers: [],
-      detectedColumns: {},
-      rowClassification: {
-        withIssue: 0,
-        withoutIssue: 0,
-        statusOnly: 0,
-        unclassified: 0,
-      },
-      statusGroups: [],
-      issueGroups: [],
-      topUrls: [],
-      warnings: [
+      error:
         error instanceof Error ? error.message : "CSV could not be parsed.",
-      ],
     };
   }
 
@@ -203,29 +200,17 @@ export function analyzeCsvText(
     .findIndex((row) => row.length !== rawHeaders.length);
   if (duplicate || invalidRow !== -1) {
     return {
+      status: "error",
       fileName,
-      rowsCount: 0,
-      headers: rawHeaders,
-      detectedColumns: {},
-      rowClassification: {
-        withIssue: 0,
-        withoutIssue: 0,
-        statusOnly: 0,
-        unclassified: 0,
-      },
-      statusGroups: [],
-      issueGroups: [],
-      topUrls: [],
-      warnings: [
-        duplicate
-          ? "CSV contains duplicate column names. Rename the repeated headers before analyzing."
-          : `CSV product row ${invalidRow + 1} has a different number of cells than the header. Check delimiters and quotes.`,
-      ],
+      error: duplicate
+        ? "CSV contains duplicate column names. Rename the repeated headers before analyzing."
+        : `CSV product row ${invalidRow + 1} has a different number of cells than the header. Check delimiters and quotes.`,
     };
   }
 
   if (matrix.length < 2) {
     return {
+      status: "success",
       fileName,
       rowsCount: 0,
       headers: matrix[0] ?? [],
@@ -369,6 +354,7 @@ export function analyzeCsvText(
     : [];
 
   return {
+    status: "success",
     fileName,
     rowsCount: rows.length,
     headers,

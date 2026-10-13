@@ -8,6 +8,10 @@ type RuleResult = {
 
 export type SchemaAnalysis = {
   blocks: number;
+  parsedBlocks: number;
+  failedBlocks: number;
+  coverage: "complete" | "partial" | "unavailable";
+  productChecksPerformed: boolean;
   productFound: boolean;
   offerFound: boolean;
   checks: RuleResult[];
@@ -300,7 +304,7 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
       status: offer ? "pass" : "fail",
       detail: offer
         ? "Typed Offer detected directly inside Product.offers. The first matching Offer is inspected."
-        : "No Offer object found. Merchant listings usually need offer data.",
+        : "No typed Offer found directly inside the first parsed Product.offers. Merchant listings usually need offer data.",
     },
     {
       label: "Price",
@@ -341,15 +345,37 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     optionalPolicy("Return policy", returnPolicy),
   ];
 
+  const failedBlocks = blocks.length - parsed.length;
+  // A Product found in a readable block can be checked. Without one, unreadable
+  // blocks prevent any conclusion about missing Product/Offer data in the input.
+  const productChecksPerformed =
+    parsed.length > 0 && (failedBlocks === 0 || Boolean(product));
+  const availableChecks = productChecksPerformed
+    ? checks
+    : isJson
+      ? []
+      : checks.filter((check) =>
+          ["Canonical URL", "Hreflang"].includes(check.label),
+        );
+
   if (blocks.length === 0) {
     errors.push("No JSON-LD script block or raw JSON object was found.");
   }
 
   return {
     blocks: blocks.length,
+    parsedBlocks: parsed.length,
+    failedBlocks,
+    coverage:
+      parsed.length === 0
+        ? "unavailable"
+        : failedBlocks > 0
+          ? "partial"
+          : "complete",
+    productChecksPerformed,
     productFound: Boolean(product),
     offerFound: Boolean(offer),
-    checks,
+    checks: availableChecks,
     errors,
   };
 }
