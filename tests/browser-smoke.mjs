@@ -401,15 +401,30 @@ try {
   assert.match(await detectedFields.innerText(), /Product ID\s+Offer ID/);
   const sourceLink = page
     .getByRole("contentinfo")
-    .getByRole("link", { name: "Source code", exact: true });
+    .getByRole("link", { name: "View on GitHub", exact: true });
   assert.equal(
     await sourceLink.getAttribute("href"),
     "https://github.com/flankero-dev/-merchant-listing-preflight",
   );
-  await sourceLink.focus();
+  assert.equal(await sourceLink.getAttribute("target"), "_blank");
+  assert.equal(await sourceLink.getAttribute("rel"), "noopener noreferrer");
+  await page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "Privacy", exact: true })
+    .focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
   assert.equal(
     await sourceLink.evaluate((el) => el === document.activeElement),
     true,
+  );
+  assert.equal(
+    await sourceLink.evaluate((el) => getComputedStyle(el).outlineStyle),
+    "solid",
+  );
+  assert.equal(
+    await sourceLink.evaluate((el) => getComputedStyle(el).outlineWidth),
+    "3px",
   );
   const brand = page
     .getByRole("banner")
@@ -726,8 +741,23 @@ try {
         );
       }
       assert.equal(
-        await page.getByRole("link", { name: /Source code/ }).count(),
+        await page
+          .getByRole("link", { name: "View on GitHub", exact: true })
+          .count(),
         1,
+      );
+      assert.equal(
+        await page
+          .getByRole("contentinfo")
+          .locator("*")
+          .evaluateAll((elements) =>
+            elements.every((element) => {
+              const rect = element.getBoundingClientRect();
+              return rect.left >= -1 && rect.right <= innerWidth + 1;
+            }),
+          ),
+        true,
+        `${path} at ${width}: footer contents stay within viewport`,
       );
       assert.equal(
         await page.locator("main *").evaluateAll((elements) =>
