@@ -249,3 +249,102 @@ test("unfinished comments and attributes cannot create phantom markup", () => {
     assert.equal(analyzeSchemaInput(input).productFound, false);
   }
 });
+
+const script = (body) => `<script type="application/ld+json">${body}</script>`;
+const productLabels = [
+  "Product type",
+  "Nested Offer type",
+  "Price",
+  "Currency",
+  "Availability",
+  "Shipping details",
+  "Return policy",
+];
+
+test("unparseable raw JSON has no unsupported property diagnoses", () => {
+  const result = analyzeSchemaInput("{broken");
+  assert.equal(result.blocks, 1);
+  assert.equal(result.parsedBlocks, 0);
+  assert.equal(result.failedBlocks, 1);
+  assert.equal(result.coverage, "unavailable");
+  assert.equal(result.productChecksPerformed, false);
+  assert.deepEqual(result.checks, []);
+  assert.match(result.errors[0], /block #1 could not be parsed/);
+});
+
+test("fully parsed data can establish a missing Product or nested Offer", () => {
+  const noProduct = analyze({ "@type": "Thing" });
+  assert.equal(noProduct.coverage, "complete");
+  assert.equal(noProduct.productChecksPerformed, true);
+  assert.equal(status(noProduct, "Product type"), "fail");
+  const noOffer = analyze({ "@type": "Product", name: "No offer" });
+  assert.equal(status(noOffer, "Product type"), "pass");
+  assert.equal(status(noOffer, "Nested Offer type"), "fail");
+});
+
+test("partial HTML retains a parsed Product and explicitly records unreadable blocks", () => {
+  const result = analyzeSchemaInput(
+    script("{broken") + script(JSON.stringify(product())),
+  );
+  assert.equal(result.blocks, 2);
+  assert.equal(result.parsedBlocks, 1);
+  assert.equal(result.failedBlocks, 1);
+  assert.equal(result.coverage, "partial");
+  assert.equal(result.productChecksPerformed, true);
+  assert.match(result.errors[0], /block #1/);
+  for (const label of productLabels.slice(0, 5))
+    assert.equal(status(result, label), "pass");
+});
+
+test("partial HTML without a parsed Product does not establish its absence", () => {
+  const result = analyzeSchemaInput(
+    script('{"@type":"Thing"}') + script("{broken"),
+  );
+  assert.equal(result.parsedBlocks, 1);
+  assert.equal(result.coverage, "partial");
+  assert.equal(result.productChecksPerformed, false);
+  assert.match(result.errors[0], /block #2/);
+  assert.equal(
+    result.checks.some((c) => productLabels.includes(c.label)),
+    false,
+  );
+});
+
+test("multiple malformed blocks retain real HTML metadata without Product diagnoses", () => {
+  const result = analyzeSchemaInput(
+    '<link rel="canonical" href="https://example.com/cup"><link rel="alternate" hreflang="en" href="https://example.com/cup">' +
+      script("{broken") +
+      script("[broken"),
+  );
+  assert.equal(result.blocks, 2);
+  assert.equal(result.parsedBlocks, 0);
+  assert.equal(result.failedBlocks, 2);
+  assert.equal(result.coverage, "unavailable");
+  assert.equal(result.productChecksPerformed, false);
+  assert.deepEqual(result.errors, [
+    "JSON-LD block #1 could not be parsed.",
+    "JSON-LD block #2 could not be parsed.",
+  ]);
+  assert.deepEqual(
+    result.checks.map((c) => c.label),
+    ["Canonical URL", "Hreflang"],
+  );
+  assert.equal(status(result, "Canonical URL"), "pass");
+  assert.match(result.checks[1].detail, /detected/);
+});
+
+test("HTML with no JSON-LD checks only supplied HTML metadata", () => {
+  const result = analyzeSchemaInput(
+    '<h1>Example</h1><link rel="canonical" href="https://example.com/cup">',
+  );
+  assert.equal(result.blocks, 0);
+  assert.equal(result.parsedBlocks, 0);
+  assert.equal(result.failedBlocks, 0);
+  assert.equal(result.productChecksPerformed, false);
+  assert.match(result.errors[0], /No JSON-LD/);
+  assert.deepEqual(
+    result.checks.map((c) => c.label),
+    ["Canonical URL", "Hreflang"],
+  );
+  assert.equal(status(result, "Canonical URL"), "pass");
+});

@@ -156,6 +156,144 @@ try {
     .getByRole("button", { name: "Analyze markup", exact: true })
     .click();
   assert.match(await page.getByRole("alert").innerText(), /JSON/i);
+  assert.match(
+    await markup.innerText(),
+    /1 JSON-LD block found\. 0 parsed; 1 could not be parsed\./,
+  );
+  assert.match(
+    await markup.innerText(),
+    /Product and Offer checks were not performed/,
+  );
+  assert.equal(await markup.locator(".pw-checks").count(), 0);
+  assert.equal(await markup.locator(".pw-status.fail").count(), 0);
+  assert.equal(
+    await markup
+      .getByRole("heading", { name: "Product type", exact: true })
+      .count(),
+    0,
+  );
+  assert.ok(
+    (await page.getByRole("status").allTextContents()).some((text) =>
+      text.includes("Product and Offer checks were not performed"),
+    ),
+  );
+
+  const parsedProduct = JSON.stringify({
+    "@type": "Product",
+    name: "Regression product",
+    offers: {
+      "@type": "Offer",
+      price: "19.99",
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+    },
+  });
+  const jsonScript = (body) =>
+    `<script type="application/ld+json">${body}</script>`;
+  const htmlMetadata =
+    '<link rel="canonical" href="https://example.com/product"><link rel="alternate" hreflang="en" href="https://example.com/product">';
+  for (const scenario of [
+    {
+      input: '{"@type":"Thing"}',
+      summary: "1 JSON-LD block found. 1 parsed.",
+      passes: 0,
+      failures: 4,
+      productCheck: true,
+    },
+    {
+      input: '{"@type":"Product","name":"No offer"}',
+      summary: "1 JSON-LD block found. 1 parsed.",
+      passes: 1,
+      failures: 3,
+      productCheck: true,
+    },
+    {
+      input: parsedProduct,
+      summary: "1 JSON-LD block found. 1 parsed.",
+      passes: 5,
+      failures: 0,
+      productCheck: true,
+    },
+    {
+      input: jsonScript(parsedProduct) + jsonScript("{broken"),
+      summary: "2 JSON-LD blocks found. 1 parsed; 1 could not be parsed.",
+      passes: 5,
+      failures: 0,
+      productCheck: true,
+      partial: true,
+      error: /block #2 could not be parsed/,
+    },
+    {
+      input: jsonScript('{"@type":"Thing"}') + jsonScript("{broken"),
+      summary: "2 JSON-LD blocks found. 1 parsed; 1 could not be parsed.",
+      passes: 0,
+      failures: 0,
+      productCheck: false,
+      partial: true,
+      error: /block #2 could not be parsed/,
+    },
+    {
+      input: jsonScript("{broken") + jsonScript("[broken"),
+      summary: "2 JSON-LD blocks found. 0 parsed; 2 could not be parsed.",
+      passes: 0,
+      failures: 0,
+      productCheck: false,
+      error: /block #1[\s\S]*block #2/,
+    },
+    {
+      input: "<h1>No JSON-LD</h1>",
+      summary: "No JSON-LD blocks found.",
+      passes: 0,
+      failures: 0,
+      productCheck: false,
+      error: /No JSON-LD/,
+    },
+    {
+      input: htmlMetadata + jsonScript("{broken"),
+      summary: "1 JSON-LD block found. 0 parsed; 1 could not be parsed.",
+      passes: 1,
+      failures: 0,
+      productCheck: false,
+      error: /could not be parsed/,
+    },
+  ]) {
+    await page.getByLabel("Product JSON-LD or HTML").fill(scenario.input);
+    assert.equal(await markup.count(), 0, "Editing must remove stale results");
+    await analyzeButton.click();
+    assert.ok((await markup.innerText()).includes(scenario.summary));
+    assert.equal(
+      await markup.locator(".pw-status.pass").count(),
+      scenario.passes,
+    );
+    assert.equal(
+      await markup.locator(".pw-status.fail").count(),
+      scenario.failures,
+    );
+    assert.equal(
+      await markup
+        .getByRole("heading", { name: "Product type", exact: true })
+        .count(),
+      scenario.productCheck ? 1 : 0,
+    );
+    if (scenario.error)
+      assert.match(await markup.getByRole("alert").innerText(), scenario.error);
+    if (scenario.partial) {
+      assert.match(
+        await markup.innerText(),
+        /Partial results: only successfully parsed blocks/,
+      );
+      assert.ok(
+        (await page.getByRole("status").allTextContents()).some((text) =>
+          text.includes("Partial results"),
+        ),
+      );
+    }
+  }
+  // Correcting failed syntax restores real checks without a page reload.
+  await page.getByLabel("Product JSON-LD or HTML").fill(parsedProduct);
+  await analyzeButton.click();
+  assert.equal(await markup.getByRole("alert").count(), 0);
+  assert.equal(await markup.locator(".pw-status.pass").count(), 5);
   await page.getByRole("button", { name: "Clear input", exact: true }).click();
   assert.equal(
     await page.getByLabel("Product JSON-LD or HTML").inputValue(),
@@ -291,8 +429,44 @@ try {
   await page
     .getByRole("heading", { name: "malformed.csv", exact: true })
     .waitFor();
-  assert.equal(await csv.locator("tbody tr").count(), 0);
-  assert.match(await csv.getByRole("alert").innerText(), /quoted|quote/i);
+  const csvError = page.getByRole("region", { name: "CSV parsing error" });
+  assert.equal(await csv.count(), 0);
+  assert.match(await csvError.getByRole("alert").innerText(), /quoted|quote/i);
+  assert.match(await csvError.innerText(), /No analysis results were produced/);
+  assert.equal(await csvError.locator(".pw-stats").count(), 0);
+  assert.equal(await csvError.locator(".pw-row-summary").count(), 0);
+  assert.equal(
+    await csvError
+      .getByRole("heading", { name: "Detected columns", exact: true })
+      .count(),
+    0,
+  );
+  assert.equal(await csvError.locator("table").count(), 0);
+  const csvMessages = (await page.getByRole("status").allTextContents()).join(
+    " ",
+  );
+  assert.match(csvMessages, /CSV analysis was not performed/);
+  assert.doesNotMatch(csvMessages, /product rows analyzed/);
+  await nav.getByRole("link", { name: "Guides", exact: true }).click();
+  await page.waitForURL("**/guides");
+  await nav.getByRole("link", { name: "Checker", exact: true }).click();
+  await csvError.waitFor();
+  assert.equal(await csvError.locator(".pw-stats").count(), 0);
+  await file.setInputFiles({
+    name: "malformed.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from('Item ID,Title,Issue\n1,"Corrected mug",Warning'),
+  });
+  await csv
+    .getByRole("heading", { name: "malformed.csv", exact: true })
+    .waitFor();
+  assert.equal(await csvError.count(), 0);
+  assert.equal(await csv.locator("tbody tr").count(), 1);
+  assert.ok(
+    (await page.getByRole("status").allTextContents()).some((text) =>
+      text.includes("1 product rows analyzed in 1 issue groups"),
+    ),
+  );
   await file.setInputFiles({
     name: "large.csv",
     mimeType: "text/csv",
@@ -723,8 +897,14 @@ try {
   const inertResult = page.getByRole("region", {
     name: "Markup analysis results",
   });
-  assert.match(await inertResult.innerText(), /0 JSON-LD block/);
-  assert.match(await inertResult.innerText(), /No Product object found/);
+  assert.match(await inertResult.innerText(), /No JSON-LD blocks found/);
+  assert.doesNotMatch(await inertResult.innerText(), /No Product object found/);
+  assert.equal(
+    await inertResult
+      .getByRole("heading", { name: "Product type", exact: true })
+      .count(),
+    0,
+  );
   assert.deepEqual(errors, []);
   console.log(
     "Browser smoke passed: sample and uploaded CSV, repeated upload, malformed and oversized input, markup validation, mode persistence, keyboard activation, mobile overflow, existing routes and 404, shared menus, all six guide links, footer links, route focus and retained analysis; no runtime errors.",

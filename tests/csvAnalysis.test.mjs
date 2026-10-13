@@ -53,12 +53,12 @@ test("does not mistake grid for ID", () => {
 });
 test("rejects duplicate headers instead of silently overwriting values", () => {
   const result = analyzeCsvText("ID,Issue,Issue\n1,Warning,Disapproved");
-  assert.equal(result.rowsCount, 0);
-  assert.match(result.warnings[0], /duplicate column names/);
+  assert.equal(result.status, "error");
+  assert.match(result.error, /duplicate column names/);
 });
 test("also rejects duplicate headers that differ only in casing", () => {
   assert.match(
-    analyzeCsvText("ID,Issue,issue\n1,Warning,Disapproved").warnings[0],
+    analyzeCsvText("ID,Issue,issue\n1,Warning,Disapproved").error,
     /duplicate/,
   );
 });
@@ -75,8 +75,8 @@ test("distinguishes an empty issue cell from a missing column", () => {
 });
 test("rejects unclosed quoted fields", () => {
   const result = analyzeCsvText('ID,Title,Issue\n1,"Cup,Warning');
-  assert.equal(result.rowsCount, 0);
-  assert.match(result.warnings[0], /unclosed quoted field/);
+  assert.equal(result.status, "error");
+  assert.match(result.error, /unclosed quoted field/);
 });
 test("header-only files return a clear warning", () => {
   const result = analyzeCsvText("ID,Issue\n");
@@ -87,23 +87,23 @@ test("header-only files return a clear warning", () => {
 test("rejects extra and missing cells instead of losing data", () => {
   for (const csv of ["ID,Issue\n1,Warning,Lost", "ID,Issue\n1"]) {
     const result = analyzeCsvText(csv);
-    assert.equal(result.rowsCount, 0);
-    assert.match(result.warnings[0], /number of cells/);
+    assert.equal(result.status, "error");
+    assert.match(result.error, /number of cells/);
   }
 });
 test("rejects generated header collisions", () => {
-  assert.match(analyzeCsvText(",column_1\n1,Warning").warnings[0], /duplicate/);
+  assert.match(analyzeCsvText(",column_1\n1,Warning").error, /duplicate/);
 });
 test("rejects malformed quote positions", () => {
   for (const csv of ['ID,Issue\n1,Warn"ing"', 'ID,Issue\n1,"Warning"junk'])
-    assert.equal(analyzeCsvText(csv).rowsCount, 0);
+    assert.equal(analyzeCsvText(csv).status, "error");
 });
 test("retains prototype-named CSV columns as ordinary values", () => {
   const result = analyzeCsvText("__proto__,Issue\nProduct,Warning");
   assert.equal(result.issueGroups[0].sample[0].__proto__, "Product");
 });
 test("bounds input size before parsing", () => {
-  assert.match(analyzeCsvText("x".repeat(2_000_001)).warnings[0], /limited/);
+  assert.match(analyzeCsvText("x".repeat(2_000_001)).error, /limited/);
 });
 
 test("URL samples are distinct and include later unique products", () => {
@@ -176,6 +176,10 @@ test("all classified row counts sum to accepted product rows", () => {
     "ID,Issue\n1,Warning,extra",
   ]) {
     const result = analyzeCsvText(csv);
+    if (result.status === "error") {
+      assert.equal("rowClassification" in result, false);
+      continue;
+    }
     assert.equal(
       Object.values(result.rowClassification).reduce(
         (total, count) => total + count,
@@ -189,4 +193,46 @@ test("all classified row counts sum to accepted product rows", () => {
     );
     if (!result.rowsCount) assert.deepEqual(result.statusGroups, []);
   }
+});
+
+test("parse failures expose no fabricated analysis metrics", () => {
+  for (const csv of [
+    'ID,Title,Issue\n1,"Cup,Warning',
+    "ID,Issue,Issue\n1,A,B",
+    "ID,Issue\n1,Warning,extra",
+  ]) {
+    const result = analyzeCsvText(csv, "same.csv");
+    assert.equal(result.status, "error");
+    assert.equal(result.fileName, "same.csv");
+    assert.ok(result.error);
+    for (const key of [
+      "rowsCount",
+      "headers",
+      "detectedColumns",
+      "rowClassification",
+      "issueGroups",
+      "warnings",
+    ])
+      assert.equal(key in result, false, key);
+  }
+});
+
+test("empty successful CSV remains distinct from a parsing failure", () => {
+  for (const csv of ["", "ID,Issue\n"]) {
+    const result = analyzeCsvText(csv);
+    assert.equal(result.status, "success");
+    assert.equal(result.rowsCount, 0);
+    assert.match(result.warnings[0], /empty|no product rows/);
+  }
+});
+
+test("successful CSV with warnings can still contain real issues or unclassified rows", () => {
+  const unclassified = analyzeCsvText("ID,Title\n1,Cup");
+  assert.equal(unclassified.status, "success");
+  assert.equal(unclassified.rowClassification.unclassified, 1);
+  assert.deepEqual(unclassified.issueGroups, []);
+  const issue = analyzeCsvText("ID,Issue\n1,Warning");
+  assert.equal(issue.status, "success");
+  assert.ok(issue.warnings.length);
+  assert.equal(issue.issueGroups[0].count, 1);
 });
