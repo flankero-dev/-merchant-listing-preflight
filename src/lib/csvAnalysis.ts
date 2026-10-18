@@ -51,8 +51,11 @@ function normalizeText(value: string): string {
 }
 
 function parseCsv(text: string): string[][] {
-  if (text.length > 2_000_000)
-    throw new Error("CSV is limited to 2 million characters.");
+  if (
+    text.length > 2_000_000 ||
+    new TextEncoder().encode(text).length > 2_000_000
+  )
+    throw new Error("CSV is limited to 2 MB (2 million UTF-8 bytes).");
   const rows: string[][] = [];
   let row: string[] = [];
   let value = "";
@@ -68,6 +71,14 @@ function parseCsv(text: string): string[][] {
   };
   const endRow = () => {
     endField();
+    if (
+      rows.length === 0 &&
+      row.length > 1 &&
+      row.every((cell) => !cell.trim())
+    )
+      throw new Error(
+        "CSV header cannot be empty. Add column names before product rows.",
+      );
     if (row.some((cell) => cell.length > 0)) rows.push(row);
     if (rows.length > 10_001)
       throw new Error("CSV is limited to 10,000 product rows.");
@@ -90,7 +101,7 @@ function parseCsv(text: string): string[][] {
     } else if (char === '"') {
       if (value.trim())
         throw new Error("CSV contains a quote inside an unquoted field.");
-      value = "";
+      // Retain whitespace before a quoted field, just like unquoted fields.
       state = "quoted";
     } else value += char;
   }
@@ -127,17 +138,12 @@ function findColumn(
   candidates: string[],
 ): string | undefined {
   const normalizedCandidates = candidates.map(normalizeText);
-  // Prefer exact aliases before trying whole phrases in longer labels.
+  // Use explicit aliases only; substring matching confuses metrics and image URLs.
   for (const candidate of normalizedCandidates) {
     const exact = headers.find((header) => normalizeText(header) === candidate);
     if (exact) return exact;
   }
-  return headers.find((header) => {
-    const padded = ` ${normalizeText(header)} `;
-    return normalizedCandidates.some((candidate) =>
-      padded.includes(` ${candidate} `),
-    );
-  });
+  return undefined;
 }
 
 function getPriority(issue: string): Priority {
@@ -184,17 +190,16 @@ export function analyzeCsvText(
   }
 
   const rawHeaders = matrix[0] ?? [];
-  const normalizedHeaders = rawHeaders.map(normalizeText);
   const generatedHeaders = rawHeaders.map(
     (header, index) => header.trim() || `column_${index + 1}`,
   );
-  const duplicate =
-    normalizedHeaders.some(
-      (header, index) =>
-        header.length > 0 && normalizedHeaders.indexOf(header) !== index,
-    ) ||
-    new Set(generatedHeaders.map(normalizeText)).size !==
-      generatedHeaders.length;
+  const seen = new Set<string>();
+  const duplicate = generatedHeaders.some((header) => {
+    const key = normalizeText(header);
+    if (seen.has(key)) return true;
+    seen.add(key);
+    return false;
+  });
   const invalidRow = matrix
     .slice(1)
     .findIndex((row) => row.length !== rawHeaders.length);
@@ -224,7 +229,14 @@ export function analyzeCsvText(
       statusGroups: [],
       issueGroups: [],
       topUrls: [],
-      warnings: ["CSV looks empty or has no product rows."],
+      warnings: [
+        "CSV looks empty or has no product rows.",
+        ...(text.includes("\ufffd")
+          ? [
+              "Replacement characters were found. Re-export the source as UTF-8 and verify the original text.",
+            ]
+          : []),
+      ],
     };
   }
 
@@ -250,6 +262,9 @@ export function analyzeCsvText(
       "landing page",
       "final url",
       "product url",
+      "landing url",
+      "landing page url",
+      "product link",
     ]),
     id: findColumn(headers, ["id", "item id", "offer id", "product id", "sku"]),
     price: findColumn(headers, ["price", "sale price", "current price"]),
@@ -316,6 +331,20 @@ export function analyzeCsvText(
     });
 
   const warnings: string[] = [];
+  if (text.includes("\ufffd"))
+    warnings.push(
+      "Replacement characters were found. Re-export the source as UTF-8 and verify the original text; other encodings are not supported.",
+    );
+  if (
+    headers.some(
+      (header) =>
+        /issue|problem|\blink\b|\burl\b/i.test(header) &&
+        !Object.values(detectedColumns).includes(header),
+    )
+  )
+    warnings.push(
+      "Some issue/link-like headers were not recognized. Detection uses explicit aliases; review Detected columns and rename ambiguous headers if needed.",
+    );
 
   if (!detectedColumns.issue) {
     warnings.push(

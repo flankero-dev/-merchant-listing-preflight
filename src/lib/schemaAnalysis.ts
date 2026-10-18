@@ -39,28 +39,18 @@ function typeIncludes(node: JsonMap | undefined, expected: string): boolean {
 function collectNodes(value: unknown): JsonMap[] {
   const nodes: JsonMap[] = [];
 
-  function walk(input: unknown) {
+  const stack: unknown[] = [value];
+  while (stack.length) {
+    const input = stack.pop();
     if (Array.isArray(input)) {
-      input.forEach(walk);
-      return;
+      for (let i = input.length - 1; i >= 0; i--) stack.push(input[i]);
+    } else if (isRecord(input)) {
+      nodes.push(input);
+      const keys = Object.keys(input);
+      for (let i = keys.length - 1; i >= 0; i--)
+        if (keys[i] !== "@context") stack.push(input[keys[i]]);
     }
-
-    if (!isRecord(input)) {
-      return;
-    }
-
-    nodes.push(input);
-
-    Object.values(input).forEach((child) => {
-      if (Array.isArray(child)) {
-        child.forEach(walk);
-      } else if (isRecord(child)) {
-        walk(child);
-      }
-    });
   }
-
-  walk(value);
   return nodes;
 }
 
@@ -88,6 +78,46 @@ function safeString(value: unknown): string {
   return "";
 }
 
+// Bounded attribute decoder: numeric references plus common syntax entities.
+// Unknown named entities remain literal; this is not a full HTML5 parser.
+function decodeAttribute(value: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    AMP: "&",
+    lt: "<",
+    LT: "<",
+    gt: ">",
+    GT: ">",
+    quot: '"',
+    QUOT: '"',
+    apos: "'",
+    nbsp: "\u00a0",
+    plus: "+",
+    colon: ":",
+    sol: "/",
+    equals: "=",
+    quest: "?",
+    num: "#",
+    Tab: "\t",
+    NewLine: "\n",
+  };
+  return value.replace(
+    /&(#x[0-9a-f]+;?|#\d+;?|[a-z][a-z\d]*;)/gi,
+    (raw, entity: string) => {
+      const token = entity.replace(/;$/, "");
+      if (!token.startsWith("#"))
+        return Object.hasOwn(named, token) ? named[token] : raw;
+      const hex = /^#x/i.test(token);
+      const point = Number.parseInt(token.slice(hex ? 2 : 1), hex ? 16 : 10);
+      return point === 0 ||
+        point > 0x10ffff ||
+        (point >= 0xd800 && point <= 0xdfff)
+        ? "\ufffd"
+        : String.fromCodePoint(point);
+    },
+  );
+}
+
 // Read complete attribute tokens so data-type and text inside other values
 // cannot be mistaken for the actual type/rel/href attributes.
 function readAttributes(source: string): Map<string, string> {
@@ -97,7 +127,10 @@ function readAttributes(source: string): Map<string, string> {
   )) {
     const name = match[1].toLowerCase();
     if (!attributes.has(name))
-      attributes.set(name, match[2] ?? match[3] ?? match[4] ?? "");
+      attributes.set(
+        name,
+        decodeAttribute(match[2] ?? match[3] ?? match[4] ?? ""),
+      );
   }
   return attributes;
 }
@@ -110,7 +143,7 @@ function inspectHtml(input: string): {
 } {
   const blocks: string[] = [];
   const links: Map<string, string>[] = [];
-  const tags = /<\/?([a-z][a-z\d:-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi;
+  const tags = /<\/?([a-z][a-z\d:-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iy;
   let templateDepth = 0;
   let cursor = 0;
   while (cursor < input.length) {
@@ -161,7 +194,8 @@ function inspectHtml(input: string): {
       if (
         name === "script" &&
         templateDepth === 0 &&
-        attributes.get("type")?.trim().toLowerCase() === "application/ld+json"
+        attributes.get("type")?.split(";")[0].trim().toLowerCase() ===
+          "application/ld+json"
       ) {
         blocks.push(input.slice(cursor, bodyEnd).trim());
       }
@@ -217,6 +251,8 @@ function optionalPolicy(label: string, value: unknown): RuleResult {
 }
 
 export function analyzeSchemaInput(input: string): SchemaAnalysis {
+  if (input.length > 2_000_000)
+    throw new Error("Input is limited to 2 million characters.");
   const trimmed = input.trim();
   const isJson = trimmed.startsWith("{") || trimmed.startsWith("[");
   const metadata = isJson
@@ -230,7 +266,8 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     try {
       parsed.push(JSON.parse(block));
     } catch {
-      errors.push(`JSON-LD block #${index + 1} could not be parsed.`);
+      if (errors.length < 10)
+        errors.push(`JSON-LD block #${index + 1} could not be parsed.`);
     }
   });
 
@@ -311,7 +348,7 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
       status: validPrice ? "pass" : "fail",
       detail: price
         ? validPrice
-          ? `Price detected: ${price}`
+          ? `Price detected: ${price} (source: ${safeString(offer?.price) ? "Offer.price" : "Offer.priceSpecification.price"}). Syntax only; consistency is not established.`
           : `Invalid non-negative decimal price: ${price}`
         : "No price detected inside Offer.",
     },
@@ -320,7 +357,7 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
       status: validCurrency ? "pass" : "fail",
       detail: currency
         ? validCurrency
-          ? `Currency code recognized: ${currency}`
+          ? `Currency code recognized: ${currency} (source: ${safeString(offer?.priceCurrency) ? "Offer.priceCurrency" : "Offer.priceSpecification.priceCurrency"}).`
           : `Unrecognized currency code: ${currency}`
         : "No priceCurrency detected inside Offer.",
     },
@@ -345,6 +382,24 @@ export function analyzeSchemaInput(input: string): SchemaAnalysis {
     optionalPolicy("Return policy", returnPolicy),
   ];
 
+  if (
+    priceSpecification &&
+    ((safeString(offer?.price) &&
+      safeString(priceSpecification.price) &&
+      safeString(offer?.price) !== safeString(priceSpecification.price)) ||
+      (safeString(offer?.priceCurrency) &&
+        safeString(priceSpecification.priceCurrency) &&
+        safeString(offer?.priceCurrency) !==
+          safeString(priceSpecification.priceCurrency)) ||
+      Boolean(safeString(offer?.price)) !==
+        Boolean(safeString(offer?.priceCurrency)))
+  )
+    checks.push({
+      label: "Price sources",
+      status: "warn",
+      detail:
+        "Price and currency may come from different sources or conflict with priceSpecification. Compare the source fields manually; syntax passes do not establish consistency or Google eligibility.",
+    });
   const failedBlocks = blocks.length - parsed.length;
   // A Product found in a readable block can be checked. Without one, unreadable
   // blocks prevent any conclusion about missing Product/Offer data in the input.
