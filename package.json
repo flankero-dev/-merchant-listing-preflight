@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/static-metadata.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser-smoke.mjs",
-    "format": "prettier --write src tests index.html README.md \"*.json\" \"*.js\" \"*.ts\" \"docs/*.md\" .github/workflows",
-    "format:check": "prettier --check src tests index.html README.md \"*.json\" \"*.js\" \"*.ts\" \"docs/*.md\" .github/workflows"
+    "format": "prettier --write src tests scripts index.html README.md \"*.json\" \"*.js\" \"*.ts\" \"docs/*.md\" .github/workflows",
+    "format:check": "prettier --check src tests scripts index.html README.md \"*.json\" \"*.js\" \"*.ts\" \"docs/*.md\" .github/workflows",
+    "test:audit": "node tests/audit.browser.mjs",
+    "test:a11y": "node tests/accessibility.browser.mjs",
+    "test:metadata": "node tests/static-metadata.mjs"
   },
   "dependencies": {
     "react": "^19.2.6",
@@ -19,6 +22,7 @@
     "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
