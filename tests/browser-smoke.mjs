@@ -598,6 +598,7 @@ try {
     "/google-merchant-center-review-checklist",
   ]) {
     await page.goto(`http://127.0.0.1:4175${path}`);
+    await page.locator("h1:visible").waitFor();
     assert.equal(await page.locator("h1:visible").count(), 1, path);
     assert.doesNotMatch(
       await page.locator("h1:visible").innerText(),

@@ -94,13 +94,11 @@ try {
     csv += "x".repeat(2000000 - Buffer.byteLength(csv));
     assert.equal(Buffer.byteLength(csv), 2000000);
     const start = performance.now();
-    await p
-      .getByLabel("Affected-products CSV")
-      .setInputFiles({
-        name: "exact-2mb.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from(csv),
-      });
+    await p.getByLabel("Affected-products CSV").setInputFiles({
+      name: "exact-2mb.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csv),
+    });
     await p.getByRole("region", { name: "CSV analysis results" }).waitFor();
     assert.equal(await p.locator("tbody tr").count(), 50);
     results.push({
@@ -108,13 +106,11 @@ try {
       bytes: Buffer.byteLength(csv),
       ms: performance.now() - start,
     });
-    await p
-      .getByLabel("Affected-products CSV")
-      .setInputFiles({
-        name: "over-2mb.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from(csv + "x"),
-      });
+    await p.getByLabel("Affected-products CSV").setInputFiles({
+      name: "over-2mb.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csv + "x"),
+    });
     await p.getByRole("alert").waitFor();
     assert.equal(
       await p.getByRole("region", { name: "CSV analysis results" }).count(),

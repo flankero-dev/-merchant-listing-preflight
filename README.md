@@ -56,11 +56,16 @@ npm test
 npm run format:check
 npm run lint
 npm run build
-npx playwright install chromium
+npx playwright install --with-deps chromium firefox webkit
 npm run test:browser
+npm run test:audit
+npm run test:a11y
+npm run test:metadata
 ```
 
 Node tests cover the analyzers. Playwright checks sample data, uploads and errors, re-selection, format switching, route navigation, mobile layouts and email-copy feedback. CI runs all checks and stores browser screenshots as artifacts.
+
+Audit scope, regression mapping and known verification limits: [October 2026 hardening](docs/audit/README.md). CI also runs Firefox/WebKit and Windows.
 
 ## Boundaries
 
