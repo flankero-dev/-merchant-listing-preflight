@@ -38,7 +38,9 @@ jobs:
         if: always()
         with:
           name: checker-browser-evidence-${{ matrix.os }}
-          path: docs/checker-*.png
+          path: |
+            docs/checker-*.png
+            docs/audit
           if-no-files-found: ignore
 
   browser-engines:

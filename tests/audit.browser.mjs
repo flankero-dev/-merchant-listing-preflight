@@ -88,13 +88,11 @@ try {
     const csv =
       "ID,Status\n" +
       Array.from({ length: 10000 }, (_, i) => `${i},Status ${i}`).join("\n");
-    await p
-      .getByLabel("Affected-products CSV")
-      .setInputFiles({
-        name: "statuses.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from(csv),
-      });
+    await p.getByLabel("Affected-products CSV").setInputFiles({
+      name: "statuses.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csv),
+    });
     await p
       .getByRole("heading", { name: "Status groups", exact: true })
       .waitFor();

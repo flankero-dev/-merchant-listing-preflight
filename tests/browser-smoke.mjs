@@ -847,7 +847,26 @@ try {
     }
   }
   await page.goto("http://127.0.0.1:4175/#order");
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  if (browserType === "chromium") {
+    await page
+      .context()
+      .grantPermissions(["clipboard-read", "clipboard-write"]);
+  } else {
+    // Playwright cannot grant these permissions in Firefox/WebKit. Verify the
+    // application contract with an explicit clipboard double, not OS integration.
+    await page.evaluate(() => {
+      let clipboardText = "";
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            clipboardText = text;
+          },
+          readText: async () => clipboardText,
+        },
+      });
+    });
+  }
   await page.getByRole("button", { name: "Copy email", exact: true }).click();
   await page.getByRole("status").filter({ hasText: "Email copied." }).waitFor();
   assert.equal(
