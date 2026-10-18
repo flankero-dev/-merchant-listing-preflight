@@ -54,6 +54,73 @@ async function scenario(id, fn, setup) {
   }
 }
 try {
+  await scenario("M05-browser-entity-oracle", async (p) => {
+    const html =
+      '<link rel="canon&#105;cal" href="https://example.invalid/?a=1&amp;b=2"><script type="application/ld&#43;json">{"@type":"Product","offers":{"@type":"Offer","price":0,"priceCurrency":"USD"}}</script>';
+    const decoded = await p.evaluate((value) => {
+      const doc = new DOMParser().parseFromString(value, "text/html");
+      return {
+        type: doc.querySelector("script").type,
+        rel: doc.querySelector("link").rel,
+        href: doc.querySelector("link").getAttribute("href"),
+      };
+    }, html);
+    assert.deepEqual(decoded, {
+      type: "application/ld+json",
+      rel: "canonical",
+      href: "https://example.invalid/?a=1&b=2",
+    });
+    await p
+      .getByRole("button", { name: "JSON-LD / HTML", exact: true })
+      .click();
+    await p.getByLabel("Product JSON-LD or HTML").fill(html);
+    await p
+      .getByRole("button", { name: "Analyze markup", exact: true })
+      .click();
+    const result = await p
+      .getByRole("region", { name: "Markup analysis results" })
+      .innerText();
+    assert.match(result, /https:\/\/example.invalid\/\?a=1&b=2/);
+    assert.match(result, /1 JSON-LD block found/);
+  });
+  await scenario("M08-near-byte-limit", async (p) => {
+    let csv =
+      "ID,Issue,Title\n" +
+      Array.from(
+        { length: 10000 },
+        (_, i) => `${i},Issue ${i},${"a".repeat(170)}`,
+      ).join("\n");
+    // Exact legal maximum in UTF-8; padding remains inside the final Title.
+    csv += "x".repeat(2000000 - Buffer.byteLength(csv));
+    assert.equal(Buffer.byteLength(csv), 2000000);
+    const start = performance.now();
+    await p
+      .getByLabel("Affected-products CSV")
+      .setInputFiles({
+        name: "exact-2mb.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(csv),
+      });
+    await p.getByRole("region", { name: "CSV analysis results" }).waitFor();
+    assert.equal(await p.locator("tbody tr").count(), 50);
+    results.push({
+      id: "M08-2mb-metric",
+      bytes: Buffer.byteLength(csv),
+      ms: performance.now() - start,
+    });
+    await p
+      .getByLabel("Affected-products CSV")
+      .setInputFiles({
+        name: "over-2mb.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(csv + "x"),
+      });
+    await p.getByRole("alert").waitFor();
+    assert.equal(
+      await p.getByRole("region", { name: "CSV analysis results" }).count(),
+      0,
+    );
+  });
   await scenario("M08-M09", async (p) => {
     const csv =
       "ID,Issue,Link\n" +

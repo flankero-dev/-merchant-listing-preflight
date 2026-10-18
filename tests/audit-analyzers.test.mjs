@@ -57,11 +57,13 @@ test("M04 context definitions are not Product instances; key order irrelevant", 
 });
 test("M03 malformed less-than runs have bounded token search", () => {
   const start = performance.now();
-  const r = analyzeSchemaInput(
-    "<".repeat(100000) + script(JSON.stringify(product)),
-  );
-  assert.equal(r.offerFound, true);
-  assert.ok(performance.now() - start < 1500);
+  for (const size of [4000, 8000, 16000, 32000, 64000, 100000, 1900000]) {
+    const r = analyzeSchemaInput(
+      "<".repeat(size) + script(JSON.stringify(product)),
+    );
+    assert.equal(r.offerFound, true);
+  }
+  assert.ok(performance.now() - start < 4000);
 });
 test("M05 entity-encoded attributes match browser interpretation", () => {
   const r = analyzeSchemaInput(
