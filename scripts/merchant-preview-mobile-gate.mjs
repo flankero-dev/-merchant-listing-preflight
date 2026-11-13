@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { chromium } from "playwright";
 
-const URL_TO_TEST = "https://a5014281.merchant-listing-preflight.pages.dev/";
+const URL_TO_TEST = "https://merchant-listing-preflight.pages.dev/";
 const HOST = new URL(URL_TO_TEST).hostname;
-const OUT = "artifacts/merchant-preview-mobile-20261113";
+const OUT = "artifacts/merchant-production-postrelease-20261113";
 const csv = [
   "Issues count,Status,Main image link,Landing URL",
   "0,Disapproved,https://img.test/a,https://shop.test/p"
@@ -31,7 +31,8 @@ const report = {
   preview: URL_TO_TEST,
   purpose: "Isolated read-only Chrome mobile emulation acceptance test; no production writes",
   viewport: { width: 390, height: 844 },
-  publishedCommit: "b84d597b5382898370db5e951b527be33c200198",
+  publishedCommit: "c02f252cd998c4b58f9c587576575f103612f458",
+  productionHttp: { status: "NOT_RUN" },
   startedAt: new Date().toISOString(),
   M01: { status: "NOT_RUN" },
   M04: { status: "NOT_RUN" },
@@ -92,6 +93,55 @@ try {
   assert.equal(response?.status(), 200, "Exact preview must return HTTP 200");
   assert.equal(new URL(page.url()).hostname, HOST, "Unexpected host redirect");
   await page.getByRole("button", { name: "CSV export", exact: true }).waitFor();
+
+  await caseCheck("productionHttp", async () => {
+    const request = context.request;
+    const req = async (path, expectStatus = 200) => {
+      const response = await request.get(new URL(path, URL_TO_TEST).href, {
+        timeout: 25000,
+        failOnStatusCode: false
+      });
+      const body = await response.body();
+      assert.equal(response.status(), expectStatus, path + " unexpected HTTP status");
+      return { response, body, html: body.toString("utf8") };
+    };
+
+    const index = await req("/");
+    assert.match(index.response.headers()["content-type"] ?? "", /text\/html/i);
+    assert.match(index.html, /<meta property="og:image" content="https:\/\/merchant-listing-preflight\.pages\.dev\/social-card\.png">/i);
+
+    const guides = await req("/guides");
+    assert.match(guides.html, /<link rel="canonical" href="https:\/\/merchant-listing-preflight\.pages\.dev\/guides">/i);
+
+    const articlePath = "/guides/how-to-fix-mismatched-product-price";
+    const article = await req(articlePath);
+    assert.match(article.html, /how-to-fix-mismatched-product-price/i);
+
+    const notFound = await req("/release-audit-missing-" + Date.now(), 404);
+    assert.match(notFound.html, /noindex/i);
+
+    const image = await req("/social-card.png");
+    const mime = image.response.headers()["content-type"] ?? "";
+    assert.match(mime, /image\/png/i, "Social image is not served as PNG");
+    assert.equal(image.body.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", "PNG signature mismatch");
+    const width = image.body.readUInt32BE(16);
+    const height = image.body.readUInt32BE(20);
+    assert.equal(width, 1200);
+    assert.equal(height, 630);
+
+    const redirect = await request.get(new URL("/merchant-center-issues", URL_TO_TEST).href,{
+      timeout: 25000, failOnStatusCode:false, maxRedirects:0
+    });
+    assert.ok([301,302,307,308].includes(redirect.status()), "Legacy guide redirect not issued");
+    assert.match(redirect.headers()["location"] ?? "", /\/guides\/?$/);
+
+    return {
+      homepage:200, guides:200, article:200, missing:404,
+      socialImage:{status:200,mime,width,height,bytes:image.body.length},
+      legacyRedirect:{status:redirect.status(),location:redirect.headers()["location"]},
+      expectedMainCommit:"c02f252cd998c4b58f9c587576575f103612f458"
+    };
+  });
 
   await caseCheck("M01", async () => {
     await page.getByRole("button", { name: "CSV export", exact: true }).tap();
@@ -167,9 +217,9 @@ try {
   if (browser) await browser.close().catch(() => {});
   report.completedAt = new Date().toISOString();
   const passed = report.M01.status === "PASS" &&
-    report.M04.status === "PASS" && report.mobile.status === "PASS" &&
+    report.M04.status === "PASS" && report.mobile.status === "PASS" && report.productionHttp.status === "PASS" &&
     !report.environmentError;
-  report.overall = passed ? "PASS_EMULATED_MOBILE" : "NOT_CONFIRMED";
+  report.overall = passed ? "PASS_PRODUCTION_POSTRELEASE" : "NOT_CONFIRMED";
   await writeFile(OUT + "/report.json", JSON.stringify(report, null, 2) + "\n");
   console.log("FINAL:", report.overall);
   if (!passed) process.exitCode = 1;

@@ -1,4 +1,4 @@
-name: Merchant preview M01-M04 mobile acceptance
+name: Merchant production post-release M01-M04 and HTTP
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  check-exact-preview:
+  verify-production:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -22,12 +22,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: M01 CSV and M04 JSON-LD in touch-enabled Chromium 390x844
+      - name: Production routes PNG M01 CSV and M04 in Chromium 390x844
         run: node scripts/merchant-preview-mobile-gate.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: merchant-preview-mobile-m01-m04
-          path: artifacts/merchant-preview-mobile-20261113/
+          name: merchant-production-postrelease-20261113
+          path: artifacts/merchant-production-postrelease-20261113/
           if-no-files-found: warn
           retention-days: 30
