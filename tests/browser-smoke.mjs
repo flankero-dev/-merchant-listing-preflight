@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
+const browserType = process.env.AUDIT_BROWSER || "chromium";
 
 const server = spawn(
   process.execPath,
@@ -34,10 +35,13 @@ try {
       }
     });
   });
-  browser = await chromium.launch({
+  browser = await { chromium, firefox, webkit }[browserType].launch({
     headless: true,
-    ...(process.env.CHROMIUM_PATH
-      ? { executablePath: process.env.CHROMIUM_PATH }
+    ...((browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined)
+      ? {
+          executablePath:
+            browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined,
+        }
       : {}),
   });
   const page = await browser.newPage({
@@ -594,6 +598,7 @@ try {
     "/google-merchant-center-review-checklist",
   ]) {
     await page.goto(`http://127.0.0.1:4175${path}`);
+    await page.locator("h1:visible").waitFor();
     assert.equal(await page.locator("h1:visible").count(), 1, path);
     assert.doesNotMatch(
       await page.locator("h1:visible").innerText(),
@@ -843,7 +848,26 @@ try {
     }
   }
   await page.goto("http://127.0.0.1:4175/#order");
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  if (browserType === "chromium") {
+    await page
+      .context()
+      .grantPermissions(["clipboard-read", "clipboard-write"]);
+  } else {
+    // Playwright cannot grant these permissions in Firefox/WebKit. Verify the
+    // application contract with an explicit clipboard double, not OS integration.
+    await page.evaluate(() => {
+      let clipboardText = "";
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            clipboardText = text;
+          },
+          readText: async () => clipboardText,
+        },
+      });
+    });
+  }
   await page.getByRole("button", { name: "Copy email", exact: true }).click();
   await page.getByRole("status").filter({ hasText: "Email copied." }).waitFor();
   assert.equal(

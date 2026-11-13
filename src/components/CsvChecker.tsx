@@ -21,11 +21,27 @@ export default function CsvChecker() {
   const [error, setError] = useState("");
   const [reading, setReading] = useState(false);
   const readId = useRef(0);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [page, setPage] = useState(0);
+  const [statusPage, setStatusPage] = useState(0);
+  const pageSize = 50;
+  function clearResults() {
+    ++readId.current;
+    setReading(false);
+    setResult(null);
+    setError("");
+    setPage(0);
+    setStatusPage(0);
+    fileRef.current?.focus();
+  }
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
     const file = input.files?.[0];
+    input.value = "";
     if (!file) return;
+    setPage(0);
+    setStatusPage(0);
     const id = ++readId.current;
     setError("");
     setResult(null);
@@ -45,7 +61,6 @@ export default function CsvChecker() {
     } finally {
       if (id === readId.current) {
         setReading(false);
-        input.value = "";
       }
     }
   }
@@ -71,13 +86,20 @@ export default function CsvChecker() {
         </div>
         <label className="pw-file">
           Affected-products CSV
-          <input type="file" accept=".csv,text/csv" onChange={upload} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,text/csv"
+            onChange={upload}
+          />
         </label>
         <div className="pw-actions">
           <button
             className="pw-primary"
             onClick={() => {
               ++readId.current;
+              setPage(0);
+              setStatusPage(0);
               setReading(false);
               setError("");
               setResult(analyzeCsvText(demoCsv, "sample-products.csv"));
@@ -85,7 +107,7 @@ export default function CsvChecker() {
           >
             Load sample CSV
           </button>
-          <span>Comma-separated · 2 MB maximum · 10,000 rows</span>
+          <span>UTF-8, comma-separated · 2 MB maximum · 10,000 rows</span>
         </div>
         {reading && <p>Reading file…</p>}
         {error && (
@@ -101,7 +123,7 @@ export default function CsvChecker() {
               <p className="pw-kicker">CSV COULD NOT BE READ</p>
               <h2>{result.fileName}</h2>
             </div>
-            <button onClick={() => setResult(null)}>Clear results</button>
+            <button onClick={clearResults}>Clear results</button>
           </div>
           <div className="pw-warning" role="alert">
             <p>{result.error}</p>
@@ -119,7 +141,7 @@ export default function CsvChecker() {
               <p className="pw-kicker">ANALYSIS</p>
               <h2>{result.fileName}</h2>
             </div>
-            <button onClick={() => setResult(null)}>Clear results</button>
+            <button onClick={clearResults}>Clear results</button>
           </div>
           <div className="pw-stats">
             <div>
@@ -178,19 +200,50 @@ export default function CsvChecker() {
                   </tr>
                 </thead>
                 <tbody>
-                  {result.issueGroups.map((group) => (
-                    <tr key={group.issue}>
-                      <td>{group.issue}</td>
-                      <td>{group.count}</td>
-                      <td>
-                        <span
-                          className={`pw-priority ${group.priority.toLowerCase()}`}
-                        >
-                          {group.priority}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {result.issueGroups
+                    .slice(page * pageSize, (page + 1) * pageSize)
+                    .map((group) => (
+                      <tr key={group.issue}>
+                        <td>
+                          {group.issue}
+                          <details>
+                            <summary>Product examples</summary>
+                            <ul>
+                              {group.sample.map((row, index) => (
+                                <li key={index}>
+                                  {result.detectedColumns.id && (
+                                    <span>
+                                      ID: {row[result.detectedColumns.id]}{" "}
+                                      ·{" "}
+                                    </span>
+                                  )}
+                                  {result.detectedColumns.title && (
+                                    <span>
+                                      {row[result.detectedColumns.title]} ·{" "}
+                                    </span>
+                                  )}
+                                  {result.detectedColumns.link ? (
+                                    <code>
+                                      {row[result.detectedColumns.link]}
+                                    </code>
+                                  ) : (
+                                    "No URL column supplied"
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        </td>
+                        <td>{group.count}</td>
+                        <td>
+                          <span
+                            className={`pw-priority ${group.priority.toLowerCase()}`}
+                          >
+                            {group.priority}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -201,6 +254,27 @@ export default function CsvChecker() {
                 : "No nonempty Issue values were supplied. This is not an all-clear for the store; compare the original export and the row counts above."}
             </p>
           )}
+          {result.issueGroups.length > pageSize && (
+            <div className="pw-actions" aria-label="Issue group pages">
+              <button
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous groups
+              </button>
+              <span>
+                Page {page + 1} of{" "}
+                {Math.ceil(result.issueGroups.length / pageSize)} ·{" "}
+                {result.issueGroups.length} total groups
+              </span>
+              <button
+                disabled={(page + 1) * pageSize >= result.issueGroups.length}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next groups
+              </button>
+            </div>
+          )}
           {result.statusGroups.length > 0 && (
             <>
               <h3>Status groups</h3>
@@ -208,14 +282,39 @@ export default function CsvChecker() {
                 Supplied status values are not issue diagnoses.
               </p>
               <dl className="pw-columns">
-                {result.statusGroups.map(({ status, count }) => (
-                  <div key={status}>
-                    <dt>{status}</dt>
-                    <dd>{count} row(s)</dd>
-                  </div>
-                ))}
+                {result.statusGroups
+                  .slice(statusPage * pageSize, (statusPage + 1) * pageSize)
+                  .map(({ status, count }) => (
+                    <div key={status}>
+                      <dt>{status}</dt>
+                      <dd>{count} row(s)</dd>
+                    </div>
+                  ))}
               </dl>
             </>
+          )}
+          {result.statusGroups.length > pageSize && (
+            <div className="pw-actions" aria-label="Status group pages">
+              <button
+                disabled={statusPage === 0}
+                onClick={() => setStatusPage((p) => p - 1)}
+              >
+                Previous statuses
+              </button>
+              <span>
+                Page {statusPage + 1} of{" "}
+                {Math.ceil(result.statusGroups.length / pageSize)} ·{" "}
+                {result.statusGroups.length} total statuses
+              </span>
+              <button
+                disabled={
+                  (statusPage + 1) * pageSize >= result.statusGroups.length
+                }
+                onClick={() => setStatusPage((p) => p + 1)}
+              >
+                Next statuses
+              </button>
+            </div>
           )}
           {result.topUrls.length > 0 && (
             <>
@@ -230,11 +329,12 @@ export default function CsvChecker() {
             </>
           )}
           <p className="pw-note">
-            Only nonempty Issue values form issue groups. Blank Issue values
-            remain separate; when Issue is absent, status values are reported
-            without inferring a diagnosis. Suggested priority is a wording
-            heuristic; Unrated means no supported rule matched. Verify the issue
-            before taking action.
+            Only nonempty Issue values form issue groups. Groups preserve exact
+            case and internal wording after trimming outer whitespace. Blank
+            Issue values remain separate; when Issue is absent, status values
+            are reported without inferring a diagnosis. Suggested priority is a
+            wording heuristic; Unrated means no supported rule matched. Verify
+            the issue before taking action.
           </p>
         </section>
       ) : result?.status === "error" ? null : (

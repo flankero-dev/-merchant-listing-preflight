@@ -46,7 +46,14 @@ export default function GuidePage() {
       </details>
       <section aria-labelledby="reference-heading">
         <h2 id="reference-heading">Official reference</h2>
-        <a href={guide.reference.href}>{guide.reference.title} ↗</a>
+        <a
+          href={guide.reference.href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {guide.reference.title} ↗{" "}
+          <span className="pw-sr-only">(opens in a new tab)</span>
+        </a>
       </section>
       <p className="reference-links">
         <Link to="/guides">Back to guides</Link>

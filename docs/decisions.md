@@ -16,7 +16,7 @@ The parser handles comma-separated fields with explicit plain, quoted and closed
 
 This project handles one export format with limits: 2 MB per uploaded file and 10,000 product rows. Supporting more delimiters and encodings would justify a broader parser contract or a maintained CSV library.
 
-Column detection tries exact aliases before longer whole-phrase matches. This prevents a short alias such as ID from matching unrelated words. Headers are checked for duplicates before converting rows into objects.
+Column detection uses explicit exact aliases after case, separator and whitespace normalization. Ambiguous labels such as Issues count and Image link are not inferred as Issue or product URL; unrecognized issue/link-like labels produce a warning. Landing URL, Landing page URL and Product link are supported. Headers are checked for duplicates before converting rows into objects.
 
 Evidence: [analyzer](../src/lib/csvAnalysis.ts), [CSV tests](../tests/csvAnalysis.test.mjs).
 
@@ -32,13 +32,13 @@ Evidence: [analyzer](../src/lib/schemaAnalysis.ts), [schema tests](../tests/sche
 
 ## File reads can finish out of order
 
-The CSV panel increments a read identifier when a file is chosen or the sample is loaded. An older file read only updates the result if its identifier is still current. Selecting the same file again is supported by clearing the file input after the read.
+The CSV panel increments a read identifier when a file is chosen or the sample is loaded. An older file read only updates the result if its identifier is still current. Selecting the same file again is supported by clearing the file input immediately after capturing the selected File.
 
 This keeps an old asynchronous operation from replacing the user's newer selection. The browser suite checks file re-selection and switching formats.
 
 ## Routes have one metadata owner
 
-React Router keeps the existing guide and report URLs available. `SEOHead` is the single owner of document title, description, canonical and social metadata. Pages render content instead of repeating metadata effects.
+React Router keeps the existing guide and report URLs available. `src/seo.ts` owns the shared route metadata. `SEOHead` updates it after SPA navigation, and the build writes route-specific static HTML for crawlers that do not execute JavaScript. Pages render content instead of repeating metadata effects.
 
 Route scrolling handles new pages and explicit anchors. The legacy `#order` anchor still focuses the compact feedback section. Guide references point to Google's documentation; a worked report is explicitly identified as fictional.
 
@@ -63,3 +63,15 @@ Contact is an email link and clipboard button. Checker inputs are never attached
 ## CSV row classification
 
 Product rows counts every accepted row. Issue groups uses only nonempty values from an Issue column; blank Issue cells never create invented issue groups. If Issue is absent, Status groups preserves the supplied status information without treating Approved, Disapproved or other labels as diagnoses. Four mutually exclusive row counts account for the entire accepted export. When both columns exist, Issue takes precedence, including its blank cells.
+
+## Audit hardening, October 2026
+
+UTF-8 CSV input is bounded by both decoded length and 2 million encoded bytes. A replacement-character warning asks users to re-export and verify the source; automatic legacy-encoding guessing is intentionally absent. Fully empty multi-cell headers are errors. Completely empty rows are skipped; whitespace-only values are data. Leading whitespace before a quoted value is preserved; whitespace after a closing quote is ignored. Issue groups retain case and internal wording after outer trimming. Priorities remain heuristics, not diagnoses.
+
+Issue and status output is paginated at 50 groups without changing aggregate counts. Each issue offers up to three inert ID/title/URL examples. No product URL becomes a network request. Duplicate header detection uses a Set. JSON traversal is iterative and excludes context definitions; HTML scanning is anchored at each candidate tag. Numeric/common syntax entities and JSON-LD MIME parameters are accepted, but this remains a bounded extractor rather than the complete HTML5 named-entity table or browser tree-repair algorithm. Unknown named entities remain literal. The first ten parse-error examples accompany exact total counts. Price/currency show their field sources and conflicting or mixed sources warn.
+
+Load sample is a deliberate replace action; the markup panel explains its effect. It is not an undo system. Clear actions return focus to the corresponding input. Google references open a clearly labelled new tab so the current in-memory workspace remains open; browser Back/BFCache is not a durability guarantee.
+
+The build creates 13 route HTML files and a noindex 404 shell, retaining React Router and the four legacy redirects. Cloudflare serves extensionless static HTML and the closest 404 page (see its [routing documentation](https://developers.cloudflare.com/pages/configuration/serving-pages/)); a wildcard rewrite would hide these files and is therefore removed. Missing pages receive HTTP 404 on Pages; Vite preview is not a complete Cloudflare emulator. All canonical routes are tested in generated HTML. The original project-created social card uses DejaVu Sans, not third-party imagery. Actual crawler cache/preview and deployment routing require a post-approval hosted check. No production deployment is part of this change.
+
+See [audit evidence](audit/README.md). `npm run test:metadata`, `npm run test:audit` and `npm run test:a11y` supplement the existing suite; axe is a development-only dependency and does not certify WCAG compliance.

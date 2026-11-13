@@ -480,3 +480,17 @@
   content: "→ ";
   color: #aebfc3;
 }
+
+.pw-table-wrap details {
+  margin-top: 8px;
+  max-width: 42rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.pw-table-wrap summary {
+  cursor: pointer;
+  color: #b7e0d2;
+}
+.pw-table-wrap details ul {
+  padding-left: 1.25rem;
+}

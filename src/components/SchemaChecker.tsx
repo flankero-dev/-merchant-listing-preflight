@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { analyzeSchemaInput, type SchemaAnalysis } from "../lib/schemaAnalysis";
 import { demoSchema } from "./checkerSamples";
 
 export default function SchemaChecker() {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState("");
   const [result, setResult] = useState<SchemaAnalysis | null>(null);
   const [error, setError] = useState("");
@@ -56,6 +57,7 @@ export default function SchemaChecker() {
         <label className="pw-markup">
           Product JSON-LD or HTML
           <textarea
+            ref={inputRef}
             value={input}
             onChange={(event) => {
               setInput(event.target.value);
@@ -84,6 +86,7 @@ export default function SchemaChecker() {
             disabled={!input}
             onClick={() => {
               setInput("");
+              inputRef.current?.focus();
               setResult(null);
               setError("");
             }}
@@ -91,6 +94,10 @@ export default function SchemaChecker() {
             Clear input
           </button>
         </div>
+        <p className="pw-note">
+          Loading the sample replaces this panel’s current input and result.
+          Reloading clears both checker panels.
+        </p>
         {error && (
           <p className="pw-warning" role="alert">
             {error}
@@ -110,6 +117,12 @@ export default function SchemaChecker() {
           )}
           {result.errors.length > 0 && (
             <div role="alert" className="pw-warning">
+              {result.failedBlocks > result.errors.length && (
+                <p>
+                  Showing the first {result.errors.length} error examples out of{" "}
+                  {result.failedBlocks} unreadable blocks.
+                </p>
+              )}
               {result.errors.map((message) => (
                 <p key={message}>{message}</p>
               ))}
